@@ -1,0 +1,7 @@
+src/components/features/audit/AuditLog.tsx(5,28): error TS6133: 'FileText' is declared but its value is never read.
+src/components/features/audit/AuditLog.tsx(5,38): error TS6133: 'ChevronDown' is declared but its value is never read.
+src/components/features/audit/AuditLog.tsx(6,1): error TS6133: 'useTenantStore' is declared but its value is never read.
+src/components/features/holidays/HolidayCalendarManager.tsx(7,15): error TS6196: 'Holiday' is declared but never used.
+src/components/features/rules/RuleBuilderWizard.tsx(46,43): error TS6133: 'activateRule' is declared but its value is never read.
+src/components/features/rules/Step3SecondaryClock.tsx(184,105): error TS2345: Argument of type 'string' is not assignable to parameter of type 'number | boolean'.
+src/components/features/schedules/WorkScheduleEditor.tsx(5,16): error TS6133: 'Plus' is declared but its value is never read.

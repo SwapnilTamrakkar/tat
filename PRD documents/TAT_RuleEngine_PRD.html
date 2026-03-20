@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TAT Rule Engine — Product Requirements Document</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0f0e0c;
+    --paper: #f9f7f3;
+    --rule: #e8e4dc;
+    --accent: #c8522a;
+    --accent-2: #2a6ec8;
+    --accent-3: #2a8c5a;
+    --muted: #7a7567;
+    --highlight: #fdf3e3;
+    --phase-1: #c8522a;
+    --phase-2: #2a6ec8;
+    --phase-3: #2a8c5a;
+    --phase-4: #8c2a8c;
+    --phase-5: #c8952a;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--paper); color: var(--ink); font-size: 15px; line-height: 1.7; }
+
+  .cover { min-height: 100vh; background: var(--ink); color: var(--paper); display: grid; grid-template-rows: 1fr auto; padding: 60px; position: relative; overflow: hidden; }
+  .cover::before { content: ''; position: absolute; top: -200px; right: -200px; width: 700px; height: 700px; border-radius: 50%; border: 1px solid rgba(200,82,42,0.15); }
+  .cover::after { content: ''; position: absolute; bottom: -100px; left: -100px; width: 500px; height: 500px; border-radius: 50%; border: 1px solid rgba(42,110,200,0.12); }
+  .cover-badge { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); margin-bottom: 40px; display: inline-flex; align-items: center; gap: 10px; }
+  .cover-badge::before { content: ''; display: inline-block; width: 20px; height: 1px; background: var(--accent); }
+  .cover-main { display: flex; flex-direction: column; justify-content: center; }
+  .cover h1 { font-family: 'DM Serif Display', serif; font-size: clamp(44px, 6vw, 88px); line-height: 1.05; font-weight: 400; margin-bottom: 24px; }
+  .cover h1 em { font-style: italic; color: var(--accent); }
+  .cover-sub { font-size: 18px; color: rgba(249,247,243,0.6); max-width: 560px; margin-bottom: 60px; font-weight: 300; }
+  .cover-meta { display: flex; gap: 48px; padding-top: 40px; border-top: 1px solid rgba(249,247,243,0.12); }
+  .cover-meta-item { display: flex; flex-direction: column; gap: 4px; }
+  .cover-meta-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: rgba(249,247,243,0.4); font-family: 'DM Mono', monospace; }
+  .cover-meta-value { font-size: 14px; color: rgba(249,247,243,0.85); font-weight: 500; }
+  .cover-footer { display: flex; justify-content: space-between; align-items: center; font-family: 'DM Mono', monospace; font-size: 11px; color: rgba(249,247,243,0.3); letter-spacing: 0.08em; }
+
+  .sticky-nav { position: sticky; top: 0; z-index: 100; background: rgba(249,247,243,0.92); backdrop-filter: blur(8px); border-bottom: 1px solid var(--rule); padding: 0 60px; display: flex; align-items: center; height: 48px; overflow-x: auto; }
+  .nav-link { padding: 0 16px; height: 48px; display: flex; align-items: center; font-size: 12px; font-weight: 500; color: var(--muted); text-decoration: none; white-space: nowrap; border-bottom: 2px solid transparent; transition: all 0.15s; }
+  .nav-link:hover { color: var(--ink); border-bottom-color: var(--accent); }
+
+  .doc-body { max-width: 1100px; margin: 0 auto; padding: 0 60px; }
+  section { padding: 80px 0; border-bottom: 1px solid var(--rule); }
+  section:last-child { border-bottom: none; }
+  .section-header { display: flex; align-items: baseline; gap: 20px; margin-bottom: 40px; }
+  .section-num { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); min-width: 32px; }
+  .section-title { font-family: 'DM Serif Display', serif; font-size: 36px; font-weight: 400; line-height: 1.1; }
+  h3 { font-family: 'DM Sans', sans-serif; font-size: 17px; font-weight: 600; margin: 36px 0 14px; color: var(--ink); }
+  h4 { font-family: 'DM Mono', monospace; font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); margin: 28px 0 10px; }
+  p { margin-bottom: 16px; color: #2a2822; }
+  ul, ol { padding-left: 22px; margin-bottom: 16px; }
+  li { margin-bottom: 6px; }
+  strong { font-weight: 600; }
+  code { font-family: 'DM Mono', monospace; font-size: 12px; background: rgba(15,14,12,0.06); padding: 1px 6px; border-radius: 3px; }
+
+  .callout { border-left: 3px solid var(--accent); background: rgba(200,82,42,0.05); padding: 16px 20px; border-radius: 0 6px 6px 0; margin: 20px 0; }
+  .callout.blue { border-left-color: var(--accent-2); background: rgba(42,110,200,0.05); }
+  .callout.green { border-left-color: var(--accent-3); background: rgba(42,140,90,0.05); }
+  .callout-title { font-weight: 600; font-size: 13px; margin-bottom: 4px; }
+
+  .data-extract { background: var(--ink); color: var(--paper); border-radius: 8px; overflow: hidden; margin: 24px 0; font-family: 'DM Mono', monospace; font-size: 12px; }
+  .data-extract-header { padding: 12px 20px; background: rgba(255,255,255,0.06); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
+  .data-table { width: 100%; border-collapse: collapse; }
+  .data-table th { padding: 10px 14px; text-align: left; background: rgba(255,255,255,0.04); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(249,247,243,0.4); border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .data-table td { padding: 10px 14px; font-size: 11px; color: rgba(249,247,243,0.75); border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: top; line-height: 1.5; }
+  .data-table tr:last-child td { border-bottom: none; }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 500; letter-spacing: 0.05em; white-space: nowrap; }
+  .pill-orange { background: rgba(200,82,42,0.25); color: #f0a07a; }
+  .pill-blue { background: rgba(42,110,200,0.25); color: #7ab0f0; }
+  .pill-green { background: rgba(42,140,90,0.25); color: #7ad0a0; }
+  .pill-muted { background: rgba(255,255,255,0.08); color: rgba(249,247,243,0.5); }
+
+  .phases-grid { display: flex; flex-direction: column; gap: 32px; }
+  .phase-card { border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; }
+  .phase-header { display: flex; align-items: center; gap: 16px; padding: 20px 28px; background: var(--highlight); border-bottom: 1px solid var(--rule); }
+  .phase-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .phase-header h3 { margin: 0; font-size: 18px; font-weight: 600; }
+  .phase-header .phase-tag { margin-left: auto; font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); letter-spacing: 0.08em; }
+  .phase-body { padding: 24px 28px; }
+  .phase-desc { color: var(--muted); font-size: 14px; margin-bottom: 20px; }
+
+  .subphases { display: flex; flex-direction: column; gap: 0; }
+  .subphase { display: grid; grid-template-columns: 200px 1fr auto; gap: 20px; align-items: start; padding: 14px 0; border-bottom: 1px solid var(--rule); }
+  .subphase:last-child { border-bottom: none; }
+  .subphase-id { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); padding-top: 2px; }
+  .subphase-title { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+  .subphase-desc { font-size: 13px; color: var(--muted); line-height: 1.5; }
+  .subphase-badge { font-family: 'DM Mono', monospace; font-size: 10px; padding: 3px 8px; border-radius: 4px; white-space: nowrap; background: rgba(15,14,12,0.06); color: var(--muted); align-self: start; }
+
+  .story-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+  .story-table thead tr { background: var(--ink); color: var(--paper); }
+  .story-table th { padding: 12px 16px; text-align: left; font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 400; }
+  .story-table td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid var(--rule); vertical-align: top; line-height: 1.55; }
+  .story-table tr:nth-child(even) td { background: var(--highlight); }
+  .priority-p1 { color: var(--accent); font-weight: 600; font-size: 11px; font-family: 'DM Mono', monospace; }
+  .priority-p2 { color: var(--accent-2); font-weight: 600; font-size: 11px; font-family: 'DM Mono', monospace; }
+
+  .flow-container { margin: 24px 0; }
+  .flow-step { display: flex; gap: 20px; margin-bottom: 0; position: relative; }
+  .flow-step::before { content: ''; position: absolute; left: 19px; top: 44px; bottom: 0; width: 1px; background: var(--rule); }
+  .flow-step:last-child::before { display: none; }
+  .flow-left { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
+  .flow-num { width: 40px; height: 40px; border-radius: 50%; background: var(--ink); color: var(--paper); display: flex; align-items: center; justify-content: center; font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500; flex-shrink: 0; z-index: 1; }
+  .flow-right { padding: 8px 0 32px; flex: 1; }
+  .flow-screen-name { font-weight: 600; font-size: 16px; margin-bottom: 6px; }
+  .flow-screen-desc { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+  .flow-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .flow-action { background: var(--highlight); border: 1px solid var(--rule); border-radius: 4px; padding: 4px 10px; font-size: 12px; color: var(--muted); }
+  .flow-action.primary { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+  .wireframe-spec { background: var(--highlight); border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; margin: 24px 0; }
+  .wireframe-spec-header { padding: 14px 20px; background: var(--ink); color: var(--paper); display: flex; align-items: center; justify-content: space-between; }
+  .wireframe-spec-header h4 { margin: 0; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; text-transform: none; letter-spacing: 0; color: var(--paper); }
+  .wireframe-spec-header .screen-id { font-family: 'DM Mono', monospace; font-size: 11px; color: rgba(249,247,243,0.4); }
+  .wireframe-spec-body { padding: 20px; }
+  .spec-row { display: grid; grid-template-columns: 160px 1fr; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--rule); font-size: 13px; }
+  .spec-row:last-child { border-bottom: none; }
+  .spec-label { font-weight: 600; color: var(--muted); font-size: 12px; padding-top: 2px; }
+
+  .edge-cases { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin: 20px 0; }
+  .edge-card { border: 1px solid var(--rule); border-radius: 8px; padding: 16px 20px; background: white; }
+  .edge-card-title { font-weight: 600; font-size: 14px; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+  .edge-icon { font-size: 16px; }
+  .edge-card p { font-size: 13px; color: var(--muted); margin: 0; }
+
+  .entity-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; margin: 20px 0; }
+  .entity-card { border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; }
+  .entity-header { padding: 10px 16px; background: var(--ink); color: var(--paper); font-weight: 600; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+  .entity-fields { padding: 10px 0; }
+  .entity-field { padding: 5px 16px; font-size: 12px; font-family: 'DM Mono', monospace; color: var(--muted); border-bottom: 1px solid var(--rule); display: flex; gap: 8px; }
+  .entity-field:last-child { border-bottom: none; }
+  .field-type { color: var(--accent-2); }
+  .field-pk { color: var(--accent); }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin: 20px 0; }
+
+  @media (max-width: 700px) {
+    .two-col { grid-template-columns: 1fr; }
+    .doc-body { padding: 0 24px; }
+    .cover { padding: 32px; }
+    .subphase { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="cover-main">
+    <div class="cover-badge">Product Requirements Document · v1.0</div>
+    <h1>TAT Rule<br><em>Engine</em><br>Builder</h1>
+    <p class="cover-sub">A no-code platform enabling business users to configure, manage, and test Turnaround Time rules for healthcare prior authorization workflows — without writing a single line of code.</p>
+    <div class="cover-meta">
+      <div class="cover-meta-item"><span class="cover-meta-label">Product</span><span class="cover-meta-value">TAT Rule Engine</span></div>
+      <div class="cover-meta-item"><span class="cover-meta-label">Doc Type</span><span class="cover-meta-value">PRD + UX Spec + Wireframe</span></div>
+      <div class="cover-meta-item"><span class="cover-meta-label">Phases</span><span class="cover-meta-value">5 Phases · 18 Sub-phases</span></div>
+      <div class="cover-meta-item"><span class="cover-meta-label">Source</span><span class="cover-meta-value">TAT_Rules_Exact.xlsx</span></div>
+    </div>
+  </div>
+  <div class="cover-footer">
+    <span>CONFIDENTIAL — INTERNAL USE ONLY</span>
+    <span>Derived from TAT_Rules_Exact.xlsx · 4 Active Rule Patterns Analyzed</span>
+  </div>
+</div>
+
+<nav class="sticky-nav">
+  <a class="nav-link" href="#overview">Overview</a>
+  <a class="nav-link" href="#data-analysis">Data Analysis</a>
+  <a class="nav-link" href="#entities">Data Model</a>
+  <a class="nav-link" href="#user-stories">User Stories</a>
+  <a class="nav-link" href="#ux-flow">UX Flow</a>
+  <a class="nav-link" href="#wireframes">Wireframes</a>
+  <a class="nav-link" href="#edge-cases">Edge Cases</a>
+  <a class="nav-link" href="#phases">Phases</a>
+  <a class="nav-link" href="#nfr">NFRs</a>
+</nav>
+
+<div class="doc-body">
+
+<section id="overview">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <h2 class="section-title">Product Overview</h2>
+  </div>
+  <p>Healthcare prior authorization workflows are governed by regulatory and contractual Turnaround Time (TAT) requirements. Today, configuring these rules requires developer involvement every time a payer, service type, or regulatory deadline changes — creating bottlenecks and compliance risk.</p>
+  <p>The <strong>TAT Rule Engine Builder</strong> is a web application that empowers business users (operations analysts, compliance officers, configuration managers) to independently build, edit, clone, and test TAT rules through a visual interface — with zero developer involvement post-deployment.</p>
+
+  <h3>Problem Statement</h3>
+  <div class="callout">
+    <div class="callout-title">Core Problem</div>
+    TAT rules are complex (multi-criteria matching + multi-clock behaviors + chaining + exclusion calendars) yet must change frequently to meet regulatory and contractual obligations. The current code-driven approach is too slow, too error-prone, and too expensive for the pace of business change.
+  </div>
+
+  <h3>Goals</h3>
+  <ul>
+    <li><strong>Autonomy:</strong> Business users configure rules without engineering tickets</li>
+    <li><strong>Correctness:</strong> Built-in validation and a simulation sandbox prevent errors from reaching production</li>
+    <li><strong>Auditability:</strong> Every rule change is versioned and traceable</li>
+    <li><strong>Scalability:</strong> Supports multi-tenant deployments with tenant-specific schedules, holidays, and rules</li>
+    <li><strong>Discoverability:</strong> Rules are searchable, filterable, and easy to understand at a glance</li>
+  </ul>
+
+  <h3>User Personas</h3>
+  <div class="two-col">
+    <div class="edge-card">
+      <div class="edge-card-title"><span class="edge-icon">👩‍💼</span> Configuration Analyst</div>
+      <p>Creates and manages TAT rules day-to-day. Familiar with clinical terminology and payer contract terms. Not technical. Needs guided, validated forms with smart defaults.</p>
+    </div>
+    <div class="edge-card">
+      <div class="edge-card-title"><span class="edge-icon">🛡️</span> Compliance Officer</div>
+      <p>Audits rules for regulatory accuracy. Needs rule history, diff views, and the ability to compare rules across tenants. Read access + approval workflows.</p>
+    </div>
+    <div class="edge-card">
+      <div class="edge-card-title"><span class="edge-icon">🔧</span> Tenant Admin</div>
+      <p>Manages tenant-level settings: work schedules, holiday calendars, application registration. Owns the configuration namespace for their organization.</p>
+    </div>
+    <div class="edge-card">
+      <div class="edge-card-title"><span class="edge-icon">🧪</span> QA / Tester</div>
+      <p>Validates rules using the simulation sandbox before they go live. Needs to build test scenarios with mock cases and verify clock behavior output.</p>
+    </div>
+  </div>
+</section>
+
+<section id="data-analysis">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <h2 class="section-title">Source Data Analysis</h2>
+  </div>
+  <p>The following rules were extracted from <code>TAT_Rules_Exact.xlsx</code> (Sheet: TAT Rules, 4 active rule rows). These represent the exact scenarios the UI must model. This analysis directly drives the data model, form fields, and validation logic.</p>
+
+  <div class="data-extract">
+    <div class="data-extract-header">TAT_Rules_Exact.xlsx — Parsed Rule Set (4 Active Rules)</div>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Service Type(s)</th>
+          <th>Request Type</th>
+          <th>Case Type</th>
+          <th>Primary Clock</th>
+          <th>Alerts</th>
+          <th>Pattern</th>
+          <th>Start Mode</th>
+          <th>Secondary Clock</th>
+          <th>Exclusions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Inpatient Admission, Inpatient Psychiatric, Intensive Rehabilitation, MH Extended Bed - 45 Day</td>
+          <td>Admission, Prior Auth, Retrospective, Reconsideration</td>
+          <td><span class="pill pill-orange">IP</span></td>
+          <td><strong>7 Days</strong><br>Start: Line Status = Submitted<br>Stop: Line Status ≠ Pending<br>Pause: Pending + Additional Info pend + Task Open<br>Resume: Task = Additional Info Received</td>
+          <td>⚠️ 2 Days<br>🔴 1 Day</td>
+          <td><span class="pill pill-blue">Calendar Days</span></td>
+          <td><span class="pill pill-muted">Next Day</span></td>
+          <td><strong>YES — 10 Days</strong><br>Start: Pending + Add'l Info pend + Task Open<br>Stop: Task = Add'l Info Received<br>⚠️ 2 Days · 🔴 1 Day</td>
+          <td>No Holidays<br>No Weekends</td>
+        </tr>
+        <tr>
+          <td>Inpatient Admission, Inpatient Psychiatric, Intensive Rehabilitation</td>
+          <td>Expedited</td>
+          <td><span class="pill pill-orange">IP</span></td>
+          <td><strong>72 Hours</strong><br>Start: Line Status = Submitted<br>Stop: Line Status ≠ Pending<br>Pause: N/A · Resume: N/A</td>
+          <td>⚠️ 36 Hours<br>🔴 24 Hours</td>
+          <td><span class="pill pill-green">Flat Hours</span></td>
+          <td><span class="pill pill-muted">Same Day</span></td>
+          <td><strong>NO</strong></td>
+          <td>No Holidays<br>No Weekends</td>
+        </tr>
+        <tr>
+          <td>Ambulance, Chiropractic, CMOE, Dental - Office, DME, EDBI, Hearing Aids, Home Care Nursing, Home Health, Imaging Studies, Laboratory, Mental Health Services, OT, PT, Physician Services, Prosthetics, Substance Abuse, Vision Care</td>
+          <td>Prior Auth, Retrospective, Reconsideration</td>
+          <td><span class="pill pill-blue">OP</span></td>
+          <td><strong>7 Days</strong><br>Same start/stop/pause/resume as IP Standard</td>
+          <td>⚠️ 2 Days<br>🔴 1 Day</td>
+          <td><span class="pill pill-blue">Calendar Days</span></td>
+          <td><span class="pill pill-muted">Next Day</span></td>
+          <td><strong>YES — 10 Days</strong><br>Same chain as IP Standard</td>
+          <td>No Holidays<br>No Weekends</td>
+        </tr>
+        <tr>
+          <td>Physician Services</td>
+          <td>Expedited</td>
+          <td><span class="pill pill-blue">OP</span></td>
+          <td><strong>72 Hours</strong><br>Start: Line Status = Submitted<br>Stop: Line Status ≠ Pending</td>
+          <td>⚠️ 36 Hours<br>🔴 18 Hours</td>
+          <td><span class="pill pill-green">Flat Hours</span></td>
+          <td><span class="pill pill-muted">Same Day</span></td>
+          <td><strong>Partial</strong> — 10 Days configured, alerts unset</td>
+          <td>No Holidays<br>No Weekends</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Key Structural Insights</h3>
+  <div class="callout">
+    <div class="callout-title">Clock Chaining Pattern (Critical UI Feature)</div>
+    The pause event on the Primary clock is the exact same event that starts the Secondary clock. The stop event on the Secondary clock is also the resume event on the Primary. The UI must represent this as a linked pair — editing the handoff event once auto-propagates to both clocks, ensuring they never drift out of sync.
+  </div>
+  <div class="callout blue">
+    <div class="callout-title">Pattern Types Drive Exclusion Locking</div>
+    Two patterns observed: <strong>Calendar Days</strong> (7-day standard, respects exclusions) and <strong>Flat Hours</strong> (72-hour expedited, runs continuously). When pattern = Flat Hours, holiday/weekend exclusion fields must be locked/disabled. This is a hard business rule derived directly from the data.
+  </div>
+  <div class="callout green">
+    <div class="callout-title">Incomplete Data in Row 4 (OP Physician Expedited)</div>
+    The 4th rule has a Secondary clock duration (10 Days) but no alert thresholds set. The UI must handle partial secondary clock configurations gracefully — saving the duration without requiring alerts, but surfacing a warning that alerts are unset.
+  </div>
+</section>
+
+<section id="entities">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <h2 class="section-title">Data Model</h2>
+  </div>
+  <p>Eight core entities underpin the rule engine. The UI is a configuration layer over this model. All entities are tenant-scoped except the Super Admin tenant registry.</p>
+
+  <div class="entity-grid">
+    <div class="entity-card">
+      <div class="entity-header">🏢 Tenant</div>
+      <div class="entity-fields">
+        <div class="entity-field"><span class="field-pk">PK</span> tenant_id</div>
+        <div class="entity-field"><span class="field-type">str</span> name</div>
+        <div class="entity-field"><span class="field-type">enum</span> status</div>
+        <div class="entity-field"><span class="field-type">FK</span> work_schedule_id</div>
+        <div class="entity-field"><span class="field-type">str[]</span> holiday_calendar_ids</div>
+        <div class="entity-field"><span class="field-type">str</span> timezone</div>
+      </div>
+    </div>
+    <div class="entity-card">
+      <div class="entity-header">📋 TAT Rule</div>
+      <div class="entity-fields">
+        <div class="entity-field"><span class="field-pk">PK</span> rule_id</div>
+        <div class="entity-field"><span class="field-type">FK</span> tenant_id</div>
+        <div class="entity-field"><span class="field-type">str</span> rule_name</div>
+        <div class="entity-field"><span class="field-type">enum</span> status (draft/active/archived)</div>
+        <div class="entity-field"><span class="field-type">int</span> version</div>
+        <div class="entity-field"><span class="field-type">obj</span> match_criteria</div>
+        <div class="entity-field"><span class="field-type">obj[]</span> clock_configs (1–2)</div>
+        <div class="entity-field"><span class="field-type">date</span> effective_from</div>
+        <div class="entity-field"><span class="field-type">date</span> effective_to</div>
+      </div>
+    </div>
+    <div class="entity-card">
+      <div class="entity-header">⏱ Clock Config</div>
+      <div class="entity-fields">
+        <div class="entity-field"><span class="field-pk">PK</span> clock_config_id</div>
+        <div class="entity-field"><span class="field-type">FK</span> rule_id</div>
+        <div class="entity-field"><span class="field-type">enum</span> clock_name (Primary/Secondary)</div>
+        <div class="entity-field"><span class="field-type">int</span> duration</div>
+        <div class="entity-field"><span class="field-type">enum</span> duration_unit</div>
+        <div class="entity-field"><span class="field-type">enum</span> pattern</div>
+        <div class="entity-field"><span class="field-type">enum</span> start_mode (SameDay/NextDay)</div>
+        <div class="entity-field"><span class="field-type">int</span> offset_minutes</div>
+        <div class="entity-field"><span class="field-type">obj</span> start_event</div>
+        <div class="entity-field"><span class="field-type">obj</span> stop_event</div>
+        <div class="entity-field"><span class="field-type">obj</span> pause_event (nullable)</div>
+        <div class="entity-field"><span class="field-type">obj</span> resume_event (nullable)</div>
+        <div class="entity-field"><span class="field-type">obj[]</span> thresholds</div>
+      </div>
+    </div>
+    <div class="entity-card">
+      <div class="entity-header">🚨 Threshold</div>
+      <div class="entity-fields">
+        <div class="entity-field"><span class="field-pk">PK</span> threshold_id</div>
+        <div class="entity-field"><span class="field-type">enum</span> level (Warning/Attention/Overdue)</div>
+        <div class="entity-field"><span class="field-type">int</span> offset_value</div>
+        <div class="entity-field"><span class="field-type">enum</span> offset_unit (hours/days)</div>
+        <div class="entity-field"><span class="field-type">bool</span> before_deadline</div>
+        <div class="entity-field"><span class="field-type">str</span> color_code</div>
+      </div>
+    </div>
+    <div class="entity-card">
+      <div class="entity-header">📅 Work Schedule</div>
+      <div class="entity-fields">
+        <div class="entity-field"><span class="field-pk">PK</span> schedule_id</div>
+        <div class="entity-field"><span class="field-type">FK</span> tenant_id</div>
+        <div class="entity-field"><span class="field-type">str</span> name</div>
+        <div class="entity-field"><span class="field-type">obj[]</span> day_slots (7 entries)</div>
+        <div class="entity-field"><span class="field-type">time</span> start_time per day</div>
+        <div class="entity-field"><span class="field-type">time</span> end_time per day</div>
+        <div class="entity-field"><span class="field-type">bool</span> is_working_day</div>
+      </div>
+    </div>
+    <div class="entity-card">
+      <div class="entity-header">🎉 Holiday Calendar</div>
+      <div class="entity-fields">
+        <div class="entity-field"><span class="field-pk">PK</span> calendar_id</div>
+        <div class="entity-field"><span class="field-type">FK</span> tenant_id</div>
+        <div class="entity-field"><span class="field-type">enum</span> type (Client/Provider/Custom)</div>
+        <div class="entity-field"><span class="field-type">str</span> name</div>
+        <div class="entity-field"><span class="field-type">date</span> holiday.date</div>
+        <div class="entity-field"><span class="field-type">str</span> holiday.name</div>
+        <div class="entity-field"><span class="field-type">str[]</span> holiday.applicable_categories</div>
+      </div>
+    </div>
+    <div class="entity-card">
+      <div class="entity-header">🔍 Rule Version</div>
+      <div class="entity-fields">
+        <div class="entity-field"><span class="field-pk">PK</span> version_id</div>
+        <div class="entity-field"><span class="field-type">FK</span> rule_id</div>
+        <div class="entity-field"><span class="field-type">int</span> version_number</div>
+        <div class="entity-field"><span class="field-type">json</span> snapshot</div>
+        <div class="entity-field"><span class="field-type">str</span> changed_by</div>
+        <div class="entity-field"><span class="field-type">str</span> change_summary</div>
+        <div class="entity-field"><span class="field-type">ts</span> created_at</div>
+      </div>
+    </div>
+    <div class="entity-card">
+      <div class="entity-header">🧪 Test Scenario</div>
+      <div class="entity-fields">
+        <div class="entity-field"><span class="field-pk">PK</span> scenario_id</div>
+        <div class="entity-field"><span class="field-type">FK</span> rule_id</div>
+        <div class="entity-field"><span class="field-type">str</span> name</div>
+        <div class="entity-field"><span class="field-type">obj</span> case_inputs</div>
+        <div class="entity-field"><span class="field-type">obj[]</span> event_sequence</div>
+        <div class="entity-field"><span class="field-type">obj</span> expected_output</div>
+        <div class="entity-field"><span class="field-type">bool</span> last_run_passed</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="user-stories">
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <h2 class="section-title">User Stories</h2>
+  </div>
+
+  <h3>Epic 1 — Rule Management</h3>
+  <table class="story-table">
+    <thead><tr><th>ID</th><th>User Story</th><th>Acceptance Criteria</th><th>Priority</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>US-1.1</td>
+        <td>As a Configuration Analyst, I want to create a new TAT rule by selecting matching criteria, so the system knows when to apply it to a case.</td>
+        <td>Multi-select for Service Type, Request Type, Case Type. Prevents save if matching criteria overlaps with existing active rule. Shows conflict warning with the overlapping rule name and a link to it.</td>
+        <td><span class="priority-p1">P1</span></td>
+      </tr>
+      <tr>
+        <td>US-1.2</td>
+        <td>As a Configuration Analyst, I want to configure a Primary clock with duration, pattern, start/stop events, and alert thresholds.</td>
+        <td>Duration: integer only. Unit dropdown (Hours/Days). Pattern dropdown (Calendar Days, Flat Hours, Business Hours). When Flat Hours selected, holiday/weekend fields disable. At least Start and Stop events required. Alerts validate: warning &gt; attention &gt; 0 offsets.</td>
+        <td><span class="priority-p1">P1</span></td>
+      </tr>
+      <tr>
+        <td>US-1.3</td>
+        <td>As a Configuration Analyst, I want to optionally add a Secondary clock that chains off the Primary clock's pause event.</td>
+        <td>Secondary clock toggle reveals Secondary config. Enabling auto-pre-fills Secondary Start = Primary Pause event. User must confirm or override. Disabling Secondary prompts if data exists.</td>
+        <td><span class="priority-p1">P1</span></td>
+      </tr>
+      <tr>
+        <td>US-1.4</td>
+        <td>As a Configuration Analyst, I want to clone an existing rule to create variants quickly.</td>
+        <td>Clone creates copy in Draft status, appends "(Copy)" to name, increments version to 1, preserves all fields. Opens in editor. Toast confirms: "Rule cloned — now editing draft."</td>
+        <td><span class="priority-p1">P1</span></td>
+      </tr>
+      <tr>
+        <td>US-1.5</td>
+        <td>As a Configuration Analyst, I want a searchable, filterable rule list so I can quickly find and manage rules.</td>
+        <td>Filters: Status, Case Type, Request Type, Service Type, Created By. Free-text search on name. Table columns: Name, Case Type, Request Type, Primary TAT, Status, Last Modified. Sortable. Pagination for 100+ rules.</td>
+        <td><span class="priority-p1">P1</span></td>
+      </tr>
+      <tr>
+        <td>US-1.6</td>
+        <td>As a Compliance Officer, I want to view the full version history and compare any two versions side by side.</td>
+        <td>History tab: all versions with timestamp, author, change summary. Compare: pick two versions, show field-level diff (added/removed/changed). Restore to past version creates new version (non-destructive).</td>
+        <td><span class="priority-p2">P2</span></td>
+      </tr>
+      <tr>
+        <td>US-1.7</td>
+        <td>As a Tenant Admin, I want to set effective date ranges on rules so compliance deadlines activate/deactivate on schedule.</td>
+        <td>Effective From / Effective To date pickers. Statuses: Scheduled (future), Active (current), Expired (past). Auto-activates/deactivates at midnight in tenant timezone.</td>
+        <td><span class="priority-p2">P2</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Epic 2 — Clock &amp; Threshold Configuration</h3>
+  <table class="story-table">
+    <thead><tr><th>ID</th><th>User Story</th><th>Acceptance Criteria</th><th>Priority</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>US-2.1</td>
+        <td>As a Configuration Analyst, I want to define clock events using structured condition builders, not free text.</td>
+        <td>Event builder: field selector (Line Status, Certified Reason, Task Name, Task Status) + operator (=, !=, contains) + value dropdown. Multiple conditions joined by AND. Human-readable preview string shown.</td>
+        <td><span class="priority-p1">P1</span></td>
+      </tr>
+      <tr>
+        <td>US-2.2</td>
+        <td>As a Configuration Analyst, I want up to 3 alert thresholds (Warning, Attention, Overdue) per clock with configurable time offsets.</td>
+        <td>Each threshold: level, offset value (integer), offset unit. Validates order: warning &gt; attention &gt; 0. Visual clock timeline preview with colored threshold markers updates in real time.</td>
+        <td><span class="priority-p1">P1</span></td>
+      </tr>
+      <tr>
+        <td>US-2.3</td>
+        <td>As a Configuration Analyst, I want to configure whether weekends and holidays are skipped in clock calculations.</td>
+        <td>Holiday exclusion dropdown (None / Client / Provider / Both). Weekend skip toggle. Both locked for Flat Hours pattern with explanatory tooltip.</td>
+        <td><span class="priority-p1">P1</span></td>
+      </tr>
+      <tr>
+        <td>US-2.4</td>
+        <td>As a Configuration Analyst, I want to configure an offset delay before the clock starts counting.</td>
+        <td>Optional integer + unit (minutes/hours). Default 0. Visible in timeline preview. Validates: offset cannot exceed clock duration.</td>
+        <td><span class="priority-p2">P2</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Epic 3 — Tenant &amp; Schedule Management</h3>
+  <table class="story-table">
+    <thead><tr><th>ID</th><th>User Story</th><th>Acceptance Criteria</th><th>Priority</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>US-3.1</td>
+        <td>As a Tenant Admin, I want to define my organization's weekly work schedule for Business Hours clock calculations.</td>
+        <td>7-day grid, per day toggle (working/non-working) and time range picker. Validates end &gt; start. Multiple named schedules; one tagged as default.</td>
+        <td><span class="priority-p1">P1</span></td>
+      </tr>
+      <tr>
+        <td>US-3.2</td>
+        <td>As a Tenant Admin, I want to manage holiday calendars (dates, names, applicable categories).</td>
+        <td>Calendar types: Client, Provider, Custom. Bulk CSV import. Manual add/edit/delete. Year navigation. Applicable category multi-select. Export to CSV.</td>
+        <td><span class="priority-p1">P1</span></td>
+      </tr>
+      <tr>
+        <td>US-3.3</td>
+        <td>As a Super Admin, I want to register and manage tenants with name, timezone, and status.</td>
+        <td>Tenant list with search. Create wizard. Deactivate cascades to draft active rules (with confirmation). Strict tenant isolation.</td>
+        <td><span class="priority-p2">P2</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Epic 4 — Simulation &amp; Testing</h3>
+  <table class="story-table">
+    <thead><tr><th>ID</th><th>User Story</th><th>Acceptance Criteria</th><th>Priority</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>US-4.1</td>
+        <td>As a QA Tester, I want to simulate a rule against a mock case to verify clock calculations before activation.</td>
+        <td>Inputs: case attributes, event sequence (event + timestamp), reference date. Output: animated clock timeline showing Start/Pause/Resume/Stop markers, deadline calculation, thresholds fired. Handles both clocks.</td>
+        <td><span class="priority-p1">P1</span></td>
+      </tr>
+      <tr>
+        <td>US-4.2</td>
+        <td>As a QA Tester, I want to save test scenarios and re-run them after rule edits to detect regressions.</td>
+        <td>Save scenario with name and expected output. Re-run shows pass/fail. Bulk re-run all scenarios on a rule. Run history with timestamps. Export results to CSV.</td>
+        <td><span class="priority-p2">P2</span></td>
+      </tr>
+      <tr>
+        <td>US-4.3</td>
+        <td>As a Configuration Analyst, I want to test a case against all active rules to diagnose conflicts or gaps.</td>
+        <td>Case Debugger: input case attributes → ordered list of matching rules with match reason shown. "No Match" gap detection. Multi-match conflict warning. Read-only — does not modify production.</td>
+        <td><span class="priority-p2">P2</span></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="ux-flow">
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <h2 class="section-title">UX Flow</h2>
+  </div>
+
+  <h3>Primary Flow: Create a New TAT Rule</h3>
+  <div class="flow-container">
+    <div class="flow-step">
+      <div class="flow-left"><div class="flow-num">1</div></div>
+      <div class="flow-right">
+        <div class="flow-screen-name">Rule Library (Dashboard)</div>
+        <div class="flow-screen-desc">Entry point. User views all rules with status filters. Stat chips (Active / Draft / Archived counts). Quick-access cards for recently edited rules.</div>
+        <div class="flow-actions">
+          <div class="flow-action primary">+ New Rule</div>
+          <div class="flow-action">Clone Existing</div>
+          <div class="flow-action">Filter / Search</div>
+          <div class="flow-action">Import Rules (JSON)</div>
+        </div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left"><div class="flow-num">2</div></div>
+      <div class="flow-right">
+        <div class="flow-screen-name">Step 1 of 4 — Matching Criteria</div>
+        <div class="flow-screen-desc">Stepper wizard begins. User defines when this rule triggers. Multi-select fields with type-ahead search. Live conflict checker runs as user selects values — highlights if an overlapping rule exists with a link to it.</div>
+        <div class="flow-actions">
+          <div class="flow-action">Case Type (IP/OP/Both)</div>
+          <div class="flow-action">Service Type(s) multi-select</div>
+          <div class="flow-action">Request Type chip group</div>
+          <div class="flow-action">Intake Method (optional)</div>
+          <div class="flow-action primary">Next →</div>
+        </div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left"><div class="flow-num">3</div></div>
+      <div class="flow-right">
+        <div class="flow-screen-name">Step 2 of 4 — Primary Clock</div>
+        <div class="flow-screen-desc">Configure the main compliance clock. Two-column layout: form on left, live clock timeline preview on right (updates instantly as user types). Duration, pattern, start mode, event builder, and alert thresholds all on this step.</div>
+        <div class="flow-actions">
+          <div class="flow-action">Duration + Unit + Pattern</div>
+          <div class="flow-action">Same Day / Next Day</div>
+          <div class="flow-action">Event Builder (Start/Stop/Pause/Resume)</div>
+          <div class="flow-action">Alert Thresholds (Warning/Attention/Overdue)</div>
+          <div class="flow-action primary">Next →</div>
+        </div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left"><div class="flow-num">4</div></div>
+      <div class="flow-right">
+        <div class="flow-screen-name">Step 3 of 4 — Secondary Clock &amp; Exclusions</div>
+        <div class="flow-screen-desc">Toggle to enable Secondary (pend) clock. When enabled: auto-chains from Primary pause event with an override option. Animated chain diagram shows the handoff visually. Below: holiday and weekend exclusion config (locked for Flat Hours).</div>
+        <div class="flow-actions">
+          <div class="flow-action">Secondary Clock Toggle</div>
+          <div class="flow-action">Secondary Duration + Alerts</div>
+          <div class="flow-action">Holiday Exclusion Dropdown</div>
+          <div class="flow-action">Weekend Exclusion Toggle</div>
+          <div class="flow-action primary">Next →</div>
+        </div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left"><div class="flow-num">5</div></div>
+      <div class="flow-right">
+        <div class="flow-screen-name">Step 4 of 4 — Review &amp; Simulate</div>
+        <div class="flow-screen-desc">Full rule summary in read-only cards. Each section has an "Edit" link back to that step. Inline simulator below: user inputs mock case + event sequence → sees clock timeline output with computed deadlines and thresholds.</div>
+        <div class="flow-actions">
+          <div class="flow-action">Review Summary Cards</div>
+          <div class="flow-action">Run Simulation</div>
+          <div class="flow-action">Save as Draft</div>
+          <div class="flow-action primary">Activate Rule</div>
+        </div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left"><div class="flow-num">6</div></div>
+      <div class="flow-right">
+        <div class="flow-screen-name">Rule Detail Page</div>
+        <div class="flow-screen-desc">Post-activation. Status badge, version number, full config in structured display. Tabs: Overview · History · Test Scenarios · Audit Log. Edit action puts rule back into Draft for review before re-activation (active version stays live in the meantime).</div>
+        <div class="flow-actions">
+          <div class="flow-action primary">Edit (→ Draft)</div>
+          <div class="flow-action">Clone</div>
+          <div class="flow-action">View History</div>
+          <div class="flow-action">Deactivate</div>
+          <div class="flow-action">Archive</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Secondary Flow: Tenant Settings</h3>
+  <div class="flow-container">
+    <div class="flow-step">
+      <div class="flow-left"><div class="flow-num">1</div></div>
+      <div class="flow-right">
+        <div class="flow-screen-name">Tenant Settings Hub</div>
+        <div class="flow-screen-desc">Navigation hub. Cards for: Work Schedules, Holiday Calendars, Application Registration, User Management, Case Debugger.</div>
+        <div class="flow-actions"><div class="flow-action primary">Open Section</div></div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left"><div class="flow-num">2</div></div>
+      <div class="flow-right">
+        <div class="flow-screen-name">Work Schedule Editor</div>
+        <div class="flow-screen-desc">7-day grid. Per day: toggle working/non-working, time range picker. Weekly coverage preview in total hours. Multiple named schedules; one tagged as default.</div>
+        <div class="flow-actions">
+          <div class="flow-action">Toggle Day On/Off</div>
+          <div class="flow-action">Set Start/End Hours</div>
+          <div class="flow-action primary">Save Schedule</div>
+        </div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left"><div class="flow-num">3</div></div>
+      <div class="flow-right">
+        <div class="flow-screen-name">Holiday Calendar Manager</div>
+        <div class="flow-screen-desc">Calendar type tabs (Client / Provider / Custom). Month grid with holiday markers. Add single holiday modal. Bulk CSV import with preview and error report. Year navigation. Export by year and category.</div>
+        <div class="flow-actions">
+          <div class="flow-action">Add Holiday</div>
+          <div class="flow-action">Bulk Import CSV</div>
+          <div class="flow-action">Filter by Category</div>
+          <div class="flow-action primary">Save Calendar</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="wireframes">
+  <div class="section-header">
+    <span class="section-num">06</span>
+    <h2 class="section-title">UI Wireframe Specs</h2>
+  </div>
+
+  <div class="wireframe-spec">
+    <div class="wireframe-spec-header"><h4>Rule Library</h4><span class="screen-id">SCR-001</span></div>
+    <div class="wireframe-spec-body">
+      <div class="spec-row"><span class="spec-label">Layout</span><span>Full-width. Top: page title + "+ New Rule" CTA (right-aligned). Below: filter bar. Main: data table with virtual scroll for large rule sets.</span></div>
+      <div class="spec-row"><span class="spec-label">Filter Bar</span><span>Status pills (All / Active / Draft / Archived / Scheduled), Case Type dropdown, Request Type multi-select, free-text search, "Reset Filters" link.</span></div>
+      <div class="spec-row"><span class="spec-label">Table Columns</span><span>Rule Name (link) · Case Type · Request Types · Primary TAT · Status Badge · Effective From · Last Modified · Actions (⋯ menu: Edit, Clone, Deactivate, Archive)</span></div>
+      <div class="spec-row"><span class="spec-label">Status Badges</span><span>Active = green dot | Draft = grey | Archived = muted strikethrough | Scheduled = blue dot + activation date tooltip</span></div>
+      <div class="spec-row"><span class="spec-label">Summary Bar</span><span>Above table: "X Active · Y Draft · Z Archived" stat chips for quick orientation.</span></div>
+      <div class="spec-row"><span class="spec-label">Empty States</span><span>No rules: illustration + "Create your first rule →" CTA. Filtered empty: "No rules match. Clear filters to see all."</span></div>
+    </div>
+  </div>
+
+  <div class="wireframe-spec">
+    <div class="wireframe-spec-header"><h4>Rule Builder — Step 1: Matching Criteria</h4><span class="screen-id">SCR-002</span></div>
+    <div class="wireframe-spec-body">
+      <div class="spec-row"><span class="spec-label">Layout</span><span>Left: vertical stepper (4 steps). Right: form area. Sticky footer: Back / Next / Save Draft buttons.</span></div>
+      <div class="spec-row"><span class="spec-label">Rule Name</span><span>Top of form. Required. Auto-suggests from selections (e.g., "IP · Expedited · Inpatient Admission"). User can override. Character limit indicator.</span></div>
+      <div class="spec-row"><span class="spec-label">Case Type</span><span>Radio pill group: "Inpatient (IP)" · "Outpatient (OP)" · "Both". Required. Selection filters available Service Types.</span></div>
+      <div class="spec-row"><span class="spec-label">Service Type</span><span>Multi-select combobox with search. Count badge when selected (e.g., "4 selected"). "Select All" and "Clear All" controls. Groups by category if applicable. All 18 OP types from data available.</span></div>
+      <div class="spec-row"><span class="spec-label">Request Type</span><span>Multi-select chip group: Admission · Prior Auth · Retrospective · Reconsideration · Expedited. Visual toggleable chips (not a dropdown).</span></div>
+      <div class="spec-row"><span class="spec-label">Conflict Check</span><span>Inline warning panel below criteria if overlap: "⚠️ Overlaps with rule '[Name]'. Review before saving." Link to conflicting rule.</span></div>
+    </div>
+  </div>
+
+  <div class="wireframe-spec">
+    <div class="wireframe-spec-header"><h4>Rule Builder — Step 2: Primary Clock</h4><span class="screen-id">SCR-003</span></div>
+    <div class="wireframe-spec-body">
+      <div class="spec-row"><span class="spec-label">Layout</span><span>Two columns: Left = form fields. Right = live clock timeline SVG preview (sticky, updates as user types in real time).</span></div>
+      <div class="spec-row"><span class="spec-label">Duration Section</span><span>Integer input + unit dropdown (Hours/Days). Below: Pattern radio (Calendar Days / Business Hours / Flat Hours). Below: Start Mode radio (Same Day / Next Day). Optional offset field (integer + unit).</span></div>
+      <div class="spec-row"><span class="spec-label">Timeline Preview</span><span>Horizontal bar: Left anchor = Start, Right = Deadline. Threshold ticks as colored vertical markers. If pause/resume configured: segmented bar showing the pause gap. Labels show exact computed values based on inputs and current date.</span></div>
+      <div class="spec-row"><span class="spec-label">Event Builder</span><span>For each event (Start, Stop, Pause*, Resume*): expandable condition builder. Each row: field selector + operator + value dropdown. "+ Add Condition" button. Human-readable preview below. *Pause/Resume optional; toggling off clears fields with confirmation if populated.</span></div>
+      <div class="spec-row"><span class="spec-label">Alert Thresholds</span><span>Three threshold rows: Warning (yellow) · Attention (orange) · Overdue (red). Each: integer input + unit + "before deadline" label. Timeline updates live. Real-time validation for ordering errors.</span></div>
+      <div class="spec-row"><span class="spec-label">Flat Hours Lock</span><span>When Pattern = Flat Hours: exclusion fields (Step 3) show lock icon with tooltip "Flat Hours clocks run continuously and cannot exclude holidays or weekends."</span></div>
+    </div>
+  </div>
+
+  <div class="wireframe-spec">
+    <div class="wireframe-spec-header"><h4>Rule Builder — Step 3: Secondary Clock &amp; Exclusions</h4><span class="screen-id">SCR-004</span></div>
+    <div class="wireframe-spec-body">
+      <div class="spec-row"><span class="spec-label">Secondary Toggle</span><span>Prominent toggle at top: "Enable Secondary (Pend) Clock". When off: section below collapsed. When on: expands with animation.</span></div>
+      <div class="spec-row"><span class="spec-label">Chain Diagram</span><span>Visual: Primary Clock bar → pause point → Secondary Clock bar → resume point → Primary continues. Animated on toggle. Makes chaining relationship visually obvious without reading text.</span></div>
+      <div class="spec-row"><span class="spec-label">Auto-Fill Banner</span><span>After enabling: "✓ Secondary clock start event auto-set from Primary pause event." with the condition shown as a read-only chip. "Override" button to manually change.</span></div>
+      <div class="spec-row"><span class="spec-label">Secondary Config</span><span>Duration · Unit · Pattern · Alert Thresholds. No Pause/Resume (secondary clocks don't chain further in v1). Stop event required.</span></div>
+      <div class="spec-row"><span class="spec-label">Exclusions Panel</span><span>Below secondary config. Holiday Exclusion dropdown (None / Client / Provider / Client + Provider). Weekend Skip toggle. Locked with tooltip if primary pattern = Flat Hours.</span></div>
+      <div class="spec-row"><span class="spec-label">Desync Warning</span><span>If user overrides Secondary Start to differ from Primary Pause: "⚠️ Secondary start event doesn't match Primary pause event. Coverage gap possible." User must acknowledge to proceed.</span></div>
+    </div>
+  </div>
+
+  <div class="wireframe-spec">
+    <div class="wireframe-spec-header"><h4>Rule Builder — Step 4: Review &amp; Simulate</h4><span class="screen-id">SCR-005</span></div>
+    <div class="wireframe-spec-body">
+      <div class="spec-row"><span class="spec-label">Summary Cards</span><span>Read-only cards: 1) Matching Criteria, 2) Primary Clock, 3) Secondary Clock (or "Not Configured"), 4) Exclusions. Each card has an "Edit" link → goes to that step. Collapsible on mobile.</span></div>
+      <div class="spec-row"><span class="spec-label">Simulation Panel</span><span>Section labeled "Test This Rule". Inputs: Reference Date, Case Attributes (pre-filled from Step 1, editable), Event Sequence (event name + timestamp rows, add/remove). "Run Simulation" button.</span></div>
+      <div class="spec-row"><span class="spec-label">Simulation Output</span><span>Animated clock timeline showing each event on timeline, computed deadline, thresholds highlighted. If Secondary: stacked dual-clock timeline. Pass/fail vs. any saved expected output. Total elapsed and remaining time shown.</span></div>
+      <div class="spec-row"><span class="spec-label">Action Footer</span><span>Sticky: "← Edit" | "Save as Draft" | "Activate Rule" (primary CTA). Activate requires simulation passed, or manual override with a warning modal. Activation shows confirmation summary modal.</span></div>
+    </div>
+  </div>
+
+  <div class="wireframe-spec">
+    <div class="wireframe-spec-header"><h4>Holiday Calendar Manager</h4><span class="screen-id">SCR-006</span></div>
+    <div class="wireframe-spec-body">
+      <div class="spec-row"><span class="spec-label">Layout</span><span>Left sidebar: calendar list (Client / Provider / Custom) + "+ New Calendar". Right: selected calendar detail.</span></div>
+      <div class="spec-row"><span class="spec-label">Calendar View</span><span>Month grid (toggle to list). Holidays: colored dot + name on hover tooltip. Year navigation. "Jump to today."</span></div>
+      <div class="spec-row"><span class="spec-label">Add Holiday Modal</span><span>Date picker (single or range), Name, Applicable Categories multi-select. Save / Cancel.</span></div>
+      <div class="spec-row"><span class="spec-label">Bulk Import</span><span>CSV template download. Upload CSV. Preview table with error highlighting for bad dates/categories. Confirm import. Merge strategy: skip duplicates or overwrite.</span></div>
+      <div class="spec-row"><span class="spec-label">Export</span><span>Export to CSV filtered by year and category. Filename includes tenant name and calendar type.</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="edge-cases">
+  <div class="section-header">
+    <span class="section-num">07</span>
+    <h2 class="section-title">Edge Cases &amp; UX Guardrails</h2>
+  </div>
+  <div class="edge-cases">
+    <div class="edge-card">
+      <div class="edge-card-title"><span class="edge-icon">⚠️</span> Overlapping Rules</div>
+      <p>Two rules with identical matching criteria cause ambiguous clock selection. Live conflict detection on Step 1 prevents activation. Shows conflicting rule name and offers to deactivate it first.</p>
+    </div>
+    <div class="edge-card">
+      <div class="edge-card-title"><span class="edge-icon">🔗</span> Chain Desync</div>
+      <p>If Secondary start event manually differs from Primary pause event, a persistent warning banner shows. User must explicitly acknowledge before proceeding. Highlighted in simulation output.</p>
+    </div>
+    <div class="edge-card">
+      <div class="edge-card-title"><span class="edge-icon">⏰</span> Flat Hours + Exclusions Conflict</div>
+      <p>If user switches to Flat Hours after setting exclusions, a prompt warns: "Switching to Flat Hours will clear exclusion settings. Continue?" Prevents silent data loss.</p>
+    </div>
+    <div class="edge-card">
+      <div class="edge-card-title"><span class="edge-icon">📅</span> Holiday on Start Day</div>
+      <p>Case submitted on a holiday with Calendar Days + holiday exclusion + Next Day start = clock starts next non-holiday day. Simulation engine must model this accurately; the timeline preview must show it clearly.</p>
+    </div>
+    <div class="edge-card">
+      <div class="edge-card-title"><span class="edge-icon">🚨</span> Threshold Order Violation</div>
+      <p>Warning offset must be greater than Attention offset which must be greater than 0. Real-time inline error. Cannot save if violated. Error message: "Warning threshold must be farther from deadline than Attention."</p>
+    </div>
+    <div class="edge-card">
+      <div class="edge-card-title"><span class="edge-icon">🕳️</span> No Matching Rule Gap</div>
+      <p>Case with no matching rule: Case Debugger surfaces this as "No TAT rule matched this case. Consider adding a rule for [criteria summary]." Prevents silent compliance gaps in production.</p>
+    </div>
+    <div class="edge-card">
+      <div class="edge-card-title"><span class="edge-icon">🔄</span> Editing Active Rule</div>
+      <p>Editing an Active rule creates a Draft copy. Active version stays live until draft is explicitly activated. Persistent banner in editor: "The active version is still applied to new cases until you activate this draft."</p>
+    </div>
+    <div class="edge-card">
+      <div class="edge-card-title"><span class="edge-icon">📋</span> Pause Without Secondary</div>
+      <p>Primary clock has a pause event but no Secondary configured. Warning: "Primary clock has a pause event but pend time is not being tracked. Enable Secondary clock?" User can dismiss and proceed, but the warning persists until resolved.</p>
+    </div>
+    <div class="edge-card">
+      <div class="edge-card-title"><span class="edge-icon">🌐</span> Missing Holiday Calendar</div>
+      <p>Rule references "Client Holidays" but no Client calendar is configured. Warning at save: "No Client Holiday Calendar configured for this tenant. Clock will behave as if no holidays are excluded." Link to calendar setup.</p>
+    </div>
+    <div class="edge-card">
+      <div class="edge-card-title"><span class="edge-icon">📁</span> CSV Import Errors</div>
+      <p>Invalid date format, duplicate entries, unrecognized categories — shown as highlighted rows in import preview. Import blocked if errors exceed 10% of rows. Downloadable error report with row-level detail.</p>
+    </div>
+    <div class="edge-card">
+      <div class="edge-card-title"><span class="edge-icon">🔁</span> Circular Event Reference</div>
+      <p>Start and Stop events cannot be identical condition sets — this creates a paradox. Real-time validation prevents save: "Start and Stop events cannot have identical conditions."</p>
+    </div>
+    <div class="edge-card">
+      <div class="edge-card-title"><span class="edge-icon">🗑️</span> Deleted Reference Data</div>
+      <p>If a Service Type referenced by an active rule is deleted from the registry, all affected rules auto-move to Draft with an alert: "Rule references a deleted service type. Review required."</p>
+    </div>
+  </div>
+</section>
+
+<section id="phases">
+  <div class="section-header">
+    <span class="section-num">08</span>
+    <h2 class="section-title">Delivery Phases</h2>
+  </div>
+  <p>5 phases deliver the product incrementally. Each phase ends with a shippable product increment that delivers user value independently. All 4 existing TAT rules from the Excel are fully modelable after Phase 2.</p>
+
+  <div class="phases-grid">
+
+    <div class="phase-card">
+      <div class="phase-header">
+        <div class="phase-dot" style="background:var(--phase-1)"></div>
+        <h3>Phase 1 — Foundation &amp; Core Rule CRUD</h3>
+        <span class="phase-tag">Sprints 1–4 · ~8 weeks</span>
+      </div>
+      <div class="phase-body">
+        <p class="phase-desc">Establish the platform infrastructure and deliver a complete, working rule creation/editing flow for Primary Clock rules. By end of Phase 1, users can create, edit, clone, and activate single-clock rules covering the Expedited (Flat Hours, 72-hour) patterns from the Excel.</p>
+        <div class="subphases">
+          <div class="subphase">
+            <span class="subphase-id">1.1 · Sprint 1</span>
+            <div>
+              <div class="subphase-title">Platform Bootstrap &amp; Auth</div>
+              <div class="subphase-desc">Project scaffold, RBAC (Super Admin, Tenant Admin, Analyst, Compliance Officer, QA Tester), tenant entity, tenant isolation middleware, database schema for all 8 entities, REST API skeleton, CI/CD pipeline, dev environment.</div>
+            </div>
+            <span class="subphase-badge">Infra</span>
+          </div>
+          <div class="subphase">
+            <span class="subphase-id">1.2 · Sprint 1</span>
+            <div>
+              <div class="subphase-title">Reference Data Management</div>
+              <div class="subphase-desc">Admin screens to manage lookup values: all 18+ Service Types (from OP rule in Excel), Request Types, Case Types, Intake Methods, Event Fields (Line Status, Certified Reason, Task Name, Task Status) with their allowed values. These power all dropdowns in the rule builder.</div>
+            </div>
+            <span class="subphase-badge">Admin</span>
+          </div>
+          <div class="subphase">
+            <span class="subphase-id">1.3 · Sprint 2</span>
+            <div>
+              <div class="subphase-title">Rule Library Screen</div>
+              <div class="subphase-desc">Full rule list with status filter, search, sort, status badges, clone action, empty states, summary stats bar, pagination. All 4 rules from Excel importable via seed data for testing. SCR-001 complete.</div>
+            </div>
+            <span class="subphase-badge">UI</span>
+          </div>
+          <div class="subphase">
+            <span class="subphase-id">1.4 · Sprint 2</span>
+            <div>
+              <div class="subphase-title">Rule Builder — Step 1: Matching Criteria</div>
+              <div class="subphase-desc">Wizard Step 1. Case Type radio, Service Type multi-select with search (supports all 18 types), Request Type chip group. Auto-suggest rule name. Live conflict detection against active rules. All field validations. SCR-002 complete.</div>
+            </div>
+            <span class="subphase-badge">UI</span>
+          </div>
+          <div class="subphase">
+            <span class="subphase-id">1.5 · Sprint 3</span>
+            <div>
+              <div class="subphase-title">Rule Builder — Step 2: Primary Clock</div>
+              <div class="subphase-desc">Duration/unit/pattern/start-mode/offset fields. Structured event builder with condition rows. Alert threshold section. Real-time clock timeline SVG visualization (live preview). Flat Hours locks exclusion fields. All validations (threshold order, required events, offset limits). SCR-003 complete.</div>
+            </div>
+            <span class="subphase-badge">UI + Engine</span>
+          </div>
+          <div class="subphase">
+            <span class="subphase-id">1.6 · Sprint 4</span>
+            <div>
+              <div class="subphase-title">Rule Builder — Review, Save &amp; Activate</div>
+              <div class="subphase-desc">Step 4 summary cards (primary clock only). Save as Draft and Activate actions. Activation confirmation modal. Rule Detail page with Overview tab. Edit-creates-draft flow with active version banner. Draft autosave to localStorage.</div>
+            </div>
+            <span class="subphase-badge">UI</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase-card">
+      <div class="phase-header">
+        <div class="phase-dot" style="background:var(--phase-2)"></div>
+        <h3>Phase 2 — Secondary Clocks, Chaining &amp; Exclusions</h3>
+        <span class="phase-tag">Sprints 5–7 · ~6 weeks</span>
+      </div>
+      <div class="phase-body">
+        <p class="phase-desc">Adds Secondary clock chaining and exclusion configuration. After this phase, all 4 existing Excel rules are fully configurable, including the "Additional Info pend" Secondary clock pattern used in IP Standard and OP Standard rules.</p>
+        <div class="subphases">
+          <div class="subphase">
+            <span class="subphase-id">2.1 · Sprint 5</span>
+            <div>
+              <div class="subphase-title">Secondary Clock UI &amp; Chain Diagram</div>
+              <div class="subphase-desc">Wizard Step 3. Secondary toggle with animation. Animated chain diagram (Primary→pause→Secondary→resume flow). Auto-fill banner with override option. Secondary config form (duration/alerts/stop event). Chain desync warning. SCR-004 partial.</div>
+            </div>
+            <span class="subphase-badge">UI</span>
+          </div>
+          <div class="subphase">
+            <span class="subphase-id">2.2 · Sprint 5</span>
+            <div>
+              <div class="subphase-title">Holiday &amp; Weekend Exclusion Config</div>
+              <div class="subphase-desc">Holiday exclusion dropdown (None/Client/Provider/Both). Weekend skip toggle. Locked state for Flat Hours with tooltip. Warning when holiday type selected but no calendar configured. Confirmation when switching pattern clears exclusions. SCR-004 complete.</div>
+            </div>
+            <span class="subphase-badge">UI</span>
+          </div>
+          <div class="subphase">
+            <span class="subphase-id">2.3 · Sprint 6</span>
+            <div>
+              <div class="subphase-title">Work Schedule Editor</div>
+              <div class="subphase-desc">Tenant Settings → Work Schedule. 7-day grid with per-day toggle and time range picker. Multiple named schedules, default designation. Weekly hours coverage preview. Used by Business Hours pattern calculation engine.</div>
+            </div>
+            <span class="subphase-badge">UI</span>
+          </div>
+          <div class="subphase">
+            <span class="subphase-id">2.4 · Sprint 6–7</span>
+            <div>
+              <div class="subphase-title">Holiday Calendar Manager</div>
+              <div class="subphase-desc">Full holiday UI: calendar type tabs, month grid view, add/edit/delete modal, bulk CSV import with row-level error report, export CSV, applicable categories per holiday, year navigation. SCR-006 complete.</div>
+            </div>
+            <span class="subphase-badge">UI</span>
+          </div>
+          <div class="subphase">
+            <span class="subphase-id">2.5 · Sprint 7</span>
+            <div>
+              <div class="subphase-title">Clock Calculation Engine (Backend)</div>
+              <div class="subphase-desc">Core calculation service: Calendar Days with holiday/weekend exclusion logic, Flat Hours continuous, Business Hours with schedule-aware calculation, chained clock state machine (Start→Running→Paused→Resumed→Stopped), threshold evaluation. Unit tested against all 4 Excel rules with exact expected outputs.</div>
+            </div>
+            <span class="subphase-badge">Backend</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase-card">
+      <div class="phase-header">
+        <div class="phase-dot" style="background:var(--phase-3)"></div>
+        <h3>Phase 3 — Simulation, Testing &amp; Case Debugger</h3>
+        <span class="phase-tag">Sprints 8–10 · ~6 weeks</span>
+      </div>
+      <div class="phase-body">
+        <p class="phase-desc">Transforms the tool from a configuration editor into a fully self-service platform by enabling rule validation before production. Drastically reduces misconfiguration risk.</p>
+        <div class="subphases">
+          <div class="subphase">
+            <span class="subphase-id">3.1 · Sprint 8</span>
+            <div>
+              <div class="subphase-title">Inline Rule Simulator</div>
+              <div class="subphase-desc">Step 4 simulation panel complete. Reference date picker, case attribute inputs, event sequence builder (event + timestamp rows). "Run Simulation" calls calculation engine. Animated dual-clock timeline output. Elapsed vs. remaining time. SCR-005 complete.</div>
+            </div>
+            <span class="subphase-badge">UI + API</span>
+          </div>
+          <div class="subphase">
+            <span class="subphase-id">3.2 · Sprint 9</span>
+            <div>
+              <div class="subphase-title">Saved Test Scenarios</div>
+              <div class="subphase-desc">Save simulation as named test scenario with expected output (deadline datetime, thresholds fired). "Test Scenarios" tab on rule detail. Re-run individual or all scenarios. Pass/fail indicators. Run history with timestamps. Export results CSV.</div>
+            </div>
+            <span class="subphase-badge">UI + API</span>
+          </div>
+          <div class="subphase">
+            <span class="subphase-id">3.3 · Sprint 9–10</span>
+            <div>
+              <div class="subphase-title">Case Debugger Tool</div>
+              <div class="subphase-desc">Standalone tool under Tenant Settings. Input any case attributes → ordered list of matching rules with match reason for each criterion. "No Match" gap detection with suggestion. Multi-match conflict highlight. Export debug report. Read-only, non-destructive.</div>
+            </div>
+            <span class="subphase-badge">UI + API</span>
+          </div>
+          <div class="subphase">
+            <span class="subphase-id">3.4 · Sprint 10</span>
+            <div>
+              <div class="subphase-title">Bulk Regression Test Suite</div>
+              <div class="subphase-desc">Run all saved test scenarios across all rules for a tenant in one operation. Summary report: X passed / Y failed. Failed scenarios show expected vs. actual diff. Export report. Trigger from Tenant Settings → Test Suite.</div>
+            </div>
+            <span class="subphase-badge">UI + API</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase-card">
+      <div class="phase-header">
+        <div class="phase-dot" style="background:var(--phase-4)"></div>
+        <h3>Phase 4 — Versioning, Audit &amp; Compliance Governance</h3>
+        <span class="phase-tag">Sprints 11–13 · ~6 weeks</span>
+      </div>
+      <div class="phase-body">
+        <p class="phase-desc">Adds the audit trail and governance features required for regulatory compliance. Compliance officers gain full visibility into rule history and the ability to restore previous configurations.</p>
+        <div class="subphases">
+          <div class="subphase">
+            <span class="subphase-id">4.1 · Sprint 11</span>
+            <div>
+              <div class="subphase-title">Rule Version History &amp; Diff View</div>
+              <div class="subphase-desc">History tab on rule detail. All versions: number, author, timestamp, auto-generated change summary. "Compare" picker: two versions → field-level diff with added/removed/changed color coding. "Restore to this version" creates new version (non-destructive).</div>
+            </div>
+            <span class="subphase-badge">UI + API</span>
+          </div>
+          <div class="subphase">
+            <span class="subphase-id">4.2 · Sprint 11–12</span>
+            <div>
+              <div class="subphase-title">Effective Date Scheduling</div>
+              <div class="subphase-desc">Effective From / Effective To on rules. Status states: Scheduled (future), Active (current), Expired (past). Auto-activation job at midnight in tenant timezone. "Scheduled" badge with tooltip. Calendar view of upcoming rule changes across tenant.</div>
+            </div>
+            <span class="subphase-badge">UI + Backend</span>
+          </div>
+          <div class="subphase">
+            <span class="subphase-id">4.3 · Sprint 12</span>
+            <div>
+              <div class="subphase-title">Tenant Audit Log</div>
+              <div class="subphase-desc">Audit Log tab at tenant level. All events: rule created/edited/activated/deactivated, schedule changed, holiday added/deleted, user added/removed. Filter by date range, event type, user, entity. Export CSV. Immutable — write-only log.</div>
+            </div>
+            <span class="subphase-badge">UI + Backend</span>
+          </div>
+          <div class="subphase">
+            <span class="subphase-id">4.4 · Sprint 13</span>
+            <div>
+              <div class="subphase-title">Approval Workflow (Feature-Flagged)</div>
+              <div class="subphase-desc">Optional per-tenant: rules require approval before activation. Draft → "Pending Approval". Approver gets notification. Approve/Reject with comment. Rejection returns to Draft with reason. Approval history in version log. Configurable per tenant, off by default.</div>
+            </div>
+            <span class="subphase-badge">UI + Backend</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase-card">
+      <div class="phase-header">
+        <div class="phase-dot" style="background:var(--phase-5)"></div>
+        <h3>Phase 5 — Advanced Features, Scale &amp; Integrations</h3>
+        <span class="phase-tag">Sprints 14–18 · ~10 weeks</span>
+      </div>
+      <div class="phase-body">
+        <p class="phase-desc">Extends the platform with power-user features, multi-tenant management, templates, analytics, and external integration capabilities for large-scale deployment.</p>
+        <div class="subphases">
+          <div class="subphase">
+            <span class="subphase-id">5.1 · Sprint 14</span>
+            <div>
+              <div class="subphase-title">Rule Import / Export (JSON &amp; CSV)</div>
+              <div class="subphase-desc">Export individual rules or all rules for a tenant as JSON (full fidelity) or CSV summary. Import from JSON with conflict detection and merge strategy (skip / overwrite / version-as-new). Enables environment promotion (dev→staging→prod).</div>
+            </div>
+            <span class="subphase-badge">UI + API</span>
+          </div>
+          <div class="subphase">
+            <span class="subphase-id">5.2 · Sprint 14–15</span>
+            <div>
+              <div class="subphase-title">Rule Templates Library</div>
+              <div class="subphase-desc">Pre-built templates for common patterns (72-hour expedited, 7-day calendar, 14-day extended — matching all 4 Excel patterns). Tenant Admin publishes tenant-specific templates. "Start from Template" option in New Rule flow. Templates versioned independently.</div>
+            </div>
+            <span class="subphase-badge">UI + API</span>
+          </div>
+          <div class="subphase">
+            <span class="subphase-id">5.3 · Sprint 15–16</span>
+            <div>
+              <div class="subphase-title">Super Admin Multi-Tenant Console</div>
+              <div class="subphase-desc">Global view: all tenants, rule counts, status breakdowns. Tenant creation wizard. Deactivate tenant (cascades to draft active rules with confirmation). Cross-tenant rule comparison. Global reference data management. System health dashboard.</div>
+            </div>
+            <span class="subphase-badge">UI + API</span>
+          </div>
+          <div class="subphase">
+            <span class="subphase-id">5.4 · Sprint 16–17</span>
+            <div>
+              <div class="subphase-title">Notification Configuration</div>
+              <div class="subphase-desc">Per-threshold notification action (email, webhook, in-app). Recipient groups. Throttling (max 1 alert per case per threshold per day). Notification log viewable from simulation. Template-based notification content with variable substitution.</div>
+            </div>
+            <span class="subphase-badge">UI + Backend</span>
+          </div>
+          <div class="subphase">
+            <span class="subphase-id">5.5 · Sprint 17</span>
+            <div>
+              <div class="subphase-title">Analytics Dashboard</div>
+              <div class="subphase-desc">Tenant-level analytics: rule activation frequency, most-matched rules, rules with zero matches (gap detection at scale), simulation pass rate by rule. Charts: rules by status over time, threshold hit frequency. Date range filter. Export.</div>
+            </div>
+            <span class="subphase-badge">UI + API</span>
+          </div>
+          <div class="subphase">
+            <span class="subphase-id">5.6 · Sprint 18</span>
+            <div>
+              <div class="subphase-title">Public API &amp; Webhooks</div>
+              <div class="subphase-desc">REST API: evaluate case against rules, list active rules, get rule by ID, simulate rule. API key management per tenant. Webhook subscriptions for rule activated/deactivated events. Rate limiting. OpenAPI spec docs. Powers integration with external case management systems.</div>
+            </div>
+            <span class="subphase-badge">Backend + API</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section id="nfr">
+  <div class="section-header">
+    <span class="section-num">09</span>
+    <h2 class="section-title">Non-Functional Requirements &amp; Open Questions</h2>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <h3>Performance</h3>
+      <ul>
+        <li>Rule Library loads in &lt;1.5s for up to 500 rules</li>
+        <li>Form interactions (field updates, live preview) respond in &lt;100ms</li>
+        <li>Clock simulation API responds in &lt;500ms for single-rule evaluation</li>
+        <li>Conflict detection completes in &lt;300ms on criteria change</li>
+      </ul>
+      <h3>Security</h3>
+      <ul>
+        <li>RBAC enforced at every API endpoint — no client-side-only guards</li>
+        <li>Strict tenant data isolation via FK enforcement and middleware</li>
+        <li>Destructive actions require confirmation with consequence summary</li>
+        <li>Audit log is write-only — no delete/edit API exists</li>
+        <li>API keys hashed at rest, shown in full only once on creation</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Usability</h3>
+      <ul>
+        <li>First-time user creates a rule within 10 minutes with zero documentation</li>
+        <li>Form state preserved across browser refresh (localStorage autosave during editing)</li>
+        <li>Full keyboard navigability for all interactive elements</li>
+        <li>WCAG 2.1 AA accessibility compliance</li>
+        <li>Mobile-responsive layout for read-only views; builder optimized for desktop</li>
+      </ul>
+      <h3>Reliability</h3>
+      <ul>
+        <li>Rule changes are transactional — no partial corrupt saves</li>
+        <li>Simulation engine is deterministic for identical inputs</li>
+        <li>Holiday calendar imports are idempotent</li>
+        <li>99.9% uptime SLA for rule evaluation API (Phase 5+)</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Stack Recommendation</h3>
+  <div class="callout blue">
+    <div class="callout-title">Suggested Technology Stack</div>
+    <strong>Frontend:</strong> React + TypeScript + TanStack Query. Form management: React Hook Form + Zod. Timeline visualization: custom SVG/D3.js. <strong>Backend:</strong> NestJS (Node.js) or FastAPI (Python) + PostgreSQL. <strong>Calendar/Date math:</strong> Luxon (timezone-aware). <strong>Auth:</strong> Auth0 or Keycloak for RBAC. <strong>Infrastructure:</strong> Kubernetes with tenant namespace isolation, Redis for calculation caching.
+  </div>
+
+  <h3>Open Questions for Stakeholder Review</h3>
+  <ol>
+    <li>Should rules have explicit priority/ordering when a case matches multiple rules? The current Excel data implies one rule per unique case profile — needs validation.</li>
+    <li>Can the same Service Type appear in multiple active rules with different Request Types? The conflict detection algorithm needs a precise definition of "overlap" — AND-based or OR-based matching semantics.</li>
+    <li>Is the Secondary clock always a "pend" clock, or can it represent other sub-clock types (e.g., appeal clocks, review clocks)? If the latter, a "Clock Purpose" label field is needed.</li>
+    <li>Does the clock calculation engine need to be exposed via API for real-time case evaluation in external systems, or is this purely a configuration tool that outputs rules consumed by a separate runtime?</li>
+    <li>What is the maximum number of concurrent clocks per case? Current Excel shows 2 (Primary + Secondary). Are there regulatory use cases requiring 3 or more?</li>
+  </ol>
+</section>
+
+</div>
+
+<footer style="background:var(--ink);color:rgba(249,247,243,0.4);padding:32px 60px;font-family:'DM Mono',monospace;font-size:11px;display:flex;justify-content:space-between;margin-top:80px;">
+  <span>TAT Rule Engine Builder · PRD v1.0 · 5 Phases · 18 Sub-phases · Source: TAT_Rules_Exact.xlsx</span>
+  <span>Confidential · Internal Use Only</span>
+</footer>
+
+</body>
+</html>
