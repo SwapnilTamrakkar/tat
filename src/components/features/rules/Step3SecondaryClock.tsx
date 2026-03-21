@@ -6,6 +6,7 @@ import { useWizardStore } from '../../../stores';
 import { UNIT_LABELS, THRESHOLD_COLORS } from '../../../constants';
 import type { DurationUnit, ThresholdLevel } from '../../../types';
 import ClockTimelinePreview from './ClockTimelinePreview';
+import { Select } from '../../ui/Select';
 import '../../ui/ui.css';
 
 export default function Step3SecondaryClock() {
@@ -135,7 +136,7 @@ export default function Step3SecondaryClock() {
                                 </div>
                                 <div className="form-group">
                                     <label className="form-label">Unit</label>
-                                    <select
+                                    <Select
                                         className="form-select"
                                         value={secondaryClock.durationUnit}
                                         onChange={(e) => setSecondaryClock({ durationUnit: e.target.value as DurationUnit })}
@@ -143,7 +144,7 @@ export default function Step3SecondaryClock() {
                                         {Object.entries(UNIT_LABELS).map(([k, v]) => (
                                             <option key={k} value={k}>{v}</option>
                                         ))}
-                                    </select>
+                                    </Select>
                                 </div>
                             </div>
 
@@ -177,7 +178,7 @@ export default function Step3SecondaryClock() {
                                         value={threshold.offsetValue}
                                         onChange={(e) => updateThreshold(threshold.level, 'offsetValue', parseInt(e.target.value) || 0)}
                                     />
-                                    <select
+                                    <Select
                                         className="form-select"
                                         style={{ width: 100 }}
                                         value={threshold.offsetUnit}
@@ -185,7 +186,7 @@ export default function Step3SecondaryClock() {
                                     >
                                         <option value="hours">Hours</option>
                                         <option value="days">Days</option>
-                                    </select>
+                                    </Select>
                                     <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-tertiary)' }}>before deadline</span>
                                 </div>
                             ))}
@@ -221,7 +222,7 @@ export default function Step3SecondaryClock() {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-6)' }}>
                     <div className="form-group">
                         <label className="form-label">Holiday Exclusion</label>
-                        <select
+                        <Select
                             className={`form-select ${isFlatHours ? 'disabled' : ''}`}
                             disabled={isFlatHours}
                             value={holidayExclusion}
@@ -231,7 +232,7 @@ export default function Step3SecondaryClock() {
                             <option value="client">Client Holidays</option>
                             <option value="provider">Provider Holidays</option>
                             <option value="both">Client + Provider Holidays</option>
-                        </select>
+                        </Select>
                     </div>
 
                     <div className="form-group">

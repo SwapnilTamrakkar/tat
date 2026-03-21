@@ -1,10 +1,10 @@
 // ============================================================
-// Rule Builder — 4-Step Wizard (SCR-002…SCR-005)
+// Rule Builder - 4-Step Wizard (SCR-002-SCR-005)
 // ============================================================
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Check, ArrowLeft, ArrowRight, Save, Zap, X, AlertTriangle, CheckCircle2 } from 'lucide-react';
-import { useWizardStore, useRuleStore, useUIStore, useTenantStore } from '../../../stores';
+import { useWizardStore, useRuleStore, useUIStore, useProviderStore } from '../../../stores';
 import { WIZARD_STEPS } from '../../../constants';
 import Step1MatchingCriteria from './Step1MatchingCriteria';
 import Step2PrimaryClock from './Step2PrimaryClock';
@@ -45,7 +45,7 @@ export default function RuleBuilderWizard() {
     const wizard = useWizardStore();
     const { addRule, updateRule, getRule } = useRuleStore();
     const { addToast } = useUIStore();
-    const { addAuditEntry } = useTenantStore();
+    const { addAuditEntry } = useProviderStore();
 
     const [stepErrors, setStepErrors] = useState<string[]>([]);
     const [showActivateModal, setShowActivateModal] = useState(false);
@@ -98,7 +98,7 @@ export default function RuleBuilderWizard() {
             updateRule(wizard.editingRuleId, ruleData);
             addAuditEntry({
                 userId: 'user-1', userName: 'Config Analyst',
-                tenantId: 'tenant-1', actionType: 'updated',
+                providerId: 'provider-1', actionType: 'updated',
                 entityType: 'rule', entityName: wizard.ruleName,
                 entityId: wizard.editingRuleId, changeSummary: `Rule "${wizard.ruleName}" updated and saved as draft.`,
             });
@@ -108,7 +108,7 @@ export default function RuleBuilderWizard() {
             addRule(newRule);
             addAuditEntry({
                 userId: 'user-1', userName: 'Config Analyst',
-                tenantId: 'tenant-1', actionType: 'created',
+                providerId: 'provider-1', actionType: 'created',
                 entityType: 'rule', entityName: wizard.ruleName,
                 entityId: newRule.id, changeSummary: `New rule "${wizard.ruleName}" created as draft.`,
             });
@@ -130,7 +130,7 @@ export default function RuleBuilderWizard() {
         }
         addAuditEntry({
             userId: 'user-1', userName: 'Config Analyst',
-            tenantId: 'tenant-1', actionType: 'activated',
+            providerId: 'provider-1', actionType: 'activated',
             entityType: 'rule', entityName: wizard.ruleName,
             entityId: ruleId_, changeSummary: `Rule "${wizard.ruleName}" created and activated with ${wizard.primaryClock.duration} ${wizard.primaryClock.durationUnit} primary clock.`,
         });
@@ -209,7 +209,7 @@ export default function RuleBuilderWizard() {
                                 </div>
                                 <div>
                                     <div style={{ color: 'var(--color-text-tertiary)', marginBottom: 2, fontSize: 'var(--font-size-xs)' }}>REQUEST TYPES</div>
-                                    <div style={{ fontWeight: 600 }}>{wizard.matchCriteria.requestTypes.join(', ') || '—'}</div>
+                                    <div style={{ fontWeight: 600 }}>{wizard.matchCriteria.requestTypes.join(', ') || '-'}</div>
                                 </div>
                                 <div>
                                     <div style={{ color: 'var(--color-text-tertiary)', marginBottom: 2, fontSize: 'var(--font-size-xs)' }}>SECONDARY CLOCK</div>
@@ -245,7 +245,7 @@ export default function RuleBuilderWizard() {
                         {wizard.editingRuleId ? `Edit: ${wizard.ruleName || 'Rule'}` : 'Create New Rule'}
                     </h1>
                     <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)' }}>
-                        Step {wizard.currentStep} of 4 — {WIZARD_STEPS[wizard.currentStep - 1].description}
+                        Step {wizard.currentStep} of 4 - {WIZARD_STEPS[wizard.currentStep - 1].description}
                     </p>
                 </div>
             </div>

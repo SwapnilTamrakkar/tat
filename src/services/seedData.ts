@@ -1,13 +1,13 @@
 // ============================================================
-// TAT Rule Engine — Seed Data (from TAT_Rules_Exact.xlsx)
+// TAT Rule Engine â€” Seed Data (from TAT_Rules_Exact.xlsx)
 // ============================================================
 import type { TATRule } from '../types';
 
 export const SEED_RULES: TATRule[] = [
     {
         id: 'rule-001',
-        tenantId: 'tenant-1',
-        ruleName: 'IP Standard — Inpatient Admission',
+        providerId: 'provider-1',
+        ruleName: 'IP Standard - Inpatient Admission',
         status: 'active',
         version: 3,
         matchCriteria: {
@@ -91,8 +91,8 @@ export const SEED_RULES: TATRule[] = [
     },
     {
         id: 'rule-002',
-        tenantId: 'tenant-1',
-        ruleName: 'IP Expedited — Inpatient Urgent',
+        providerId: 'provider-1',
+        ruleName: 'IP Expedited - Inpatient Urgent',
         status: 'active',
         version: 2,
         matchCriteria: {
@@ -137,8 +137,8 @@ export const SEED_RULES: TATRule[] = [
     },
     {
         id: 'rule-003',
-        tenantId: 'tenant-1',
-        ruleName: 'OP Standard — Outpatient Services',
+        providerId: 'provider-1',
+        ruleName: 'OP Standard - Outpatient Services',
         status: 'active',
         version: 4,
         matchCriteria: {
@@ -224,8 +224,8 @@ export const SEED_RULES: TATRule[] = [
     },
     {
         id: 'rule-004',
-        tenantId: 'tenant-1',
-        ruleName: 'OP Expedited — Physician Services',
+        providerId: 'provider-1',
+        ruleName: 'OP Expedited - Physician Services',
         status: 'draft',
         version: 1,
         matchCriteria: {

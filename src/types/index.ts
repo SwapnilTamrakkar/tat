@@ -1,5 +1,5 @@
 // ============================================================
-// TAT Rule Engine — Core Type Definitions
+// TAT Rule Engine â€” Core Type Definitions
 // ============================================================
 
 // --- Enums ---
@@ -116,7 +116,7 @@ export interface MatchCriteria {
 // --- TAT Rule ---
 export interface TATRule {
     id: string;
-    tenantId: string;
+    providerId: string;
     ruleName: string;
     status: RuleStatus;
     version: number;
@@ -144,8 +144,8 @@ export interface RuleVersion {
     createdAt: string;
 }
 
-// --- Tenant ---
-export interface Tenant {
+// --- Provider ---
+export interface Provider {
     id: string;
     name: string;
     code: string;
@@ -166,7 +166,7 @@ export interface DaySlot {
 
 export interface WorkSchedule {
     id: string;
-    tenantId: string;
+    providerId: string;
     name: string;
     isDefault: boolean;
     daySlots: DaySlot[];
@@ -183,7 +183,7 @@ export interface Holiday {
 
 export interface HolidayCalendar {
     id: string;
-    tenantId: string;
+    providerId: string;
     type: HolidayType;
     name: string;
     holidays: Holiday[];
@@ -230,9 +230,9 @@ export interface AuditLogEntry {
     timestamp: string;
     userId: string;
     userName: string;
-    tenantId: string;
+    providerId: string;
     actionType: 'created' | 'updated' | 'activated' | 'deactivated' | 'archived' | 'cloned' | 'restored';
-    entityType: 'rule' | 'schedule' | 'holiday' | 'tenant';
+    entityType: 'rule' | 'schedule' | 'holiday' | 'provider';
     entityName: string;
     entityId: string;
     changeSummary: string;

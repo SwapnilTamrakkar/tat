@@ -1,13 +1,14 @@
 // ============================================================
-// App Layout — Sidebar + Header + Content
+// App Layout â€” Sidebar + Header + Content
 // ============================================================
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import {
     LayoutDashboard, FileCog, Settings, Calendar, Clock, FileText,
     ChevronLeft, ChevronRight, Bell, Search, CheckCircle,
-    XCircle, AlertTriangle, Info, X, Timer, Building2
+    XCircle, AlertTriangle, Info, X, Building2
 } from 'lucide-react';
 import { useUIStore } from '../../stores';
+import heroLogo from '../../assets/hero.jpg';
 import './Layout.css';
 
 const navItems = [
@@ -19,8 +20,8 @@ const navItems = [
         ]
     },
     {
-        section: 'Tenant Settings', items: [
-            { to: '/settings/tenants', icon: Building2, label: 'Tenant Registry' },
+        section: 'Provider Settings', items: [
+            { to: '/settings/providers', icon: Building2, label: 'Provider Registry' },
             { to: '/settings/schedules', icon: Clock, label: 'Work Schedules' },
             { to: '/settings/holidays', icon: Calendar, label: 'Holiday Calendars' },
         ]
@@ -44,7 +45,7 @@ export default function AppLayout() {
     const location = useLocation();
 
     const getPageTitle = () => {
-        if (location.pathname === '/') return 'Rule Library';
+        if (location.pathname === '/') return 'TAT Clock Engine';
         if (location.pathname.startsWith('/rules/new')) return 'Create New Rule';
         if (location.pathname.startsWith('/rules/') && location.pathname.includes('/edit')) return 'Edit Rule';
         if (location.pathname.startsWith('/rules/')) return 'Rule Details';
@@ -59,12 +60,8 @@ export default function AppLayout() {
             {/* Sidebar */}
             <aside className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
                 <div className="sidebar-brand">
-                    <div className="sidebar-brand-icon">
-                        <Timer size={20} />
-                    </div>
-                    <div className="sidebar-brand-text">
-                        <span className="sidebar-brand-name">TAT Engine</span>
-                        <span className="sidebar-brand-sub">Rule Builder</span>
+                    <div className="sidebar-brand-icon" style={{ width: sidebarCollapsed ? 36 : 160, height: 40, padding: 0, overflow: 'hidden', background: 'transparent', boxShadow: 'none', display: 'flex', alignItems: 'center', justifyContent: sidebarCollapsed ? 'center' : 'flex-start', transition: 'all var(--transition-slow)' }}>
+                        <img src={heroLogo} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain', objectPosition: sidebarCollapsed ? 'center' : 'left center', borderRadius: 'inherit', display: 'block', transition: 'object-position var(--transition-slow)' }} />
                     </div>
                 </div>
 

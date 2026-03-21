@@ -2,8 +2,9 @@
 // Holiday Calendar Manager (SCR-006)
 // ============================================================
 import { useState } from 'react';
-import { Plus, Download, Upload, Trash2, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useTenantStore, useUIStore } from '../../../stores';
+import { Plus, Download, Upload, Trash2, Calendar, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { useProviderStore, useUIStore } from '../../../stores';
+import { Select } from '../../ui/Select';
 import type { HolidayType } from '../../../types';
 import '../../ui/ui.css';
 
@@ -16,21 +17,19 @@ const CALENDAR_TABS: { label: string; value: HolidayType }[] = [
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 export default function HolidayCalendarManager() {
-    const { holidayCalendars } = useTenantStore();
+    const { holidayCalendars, addHoliday, deleteHoliday } = useProviderStore();
     const { addToast } = useUIStore();
     const [activeTab, setActiveTab] = useState<HolidayType>('client');
     const [year, setYear] = useState(2025);
     const [showAddModal, setShowAddModal] = useState(false);
     const [newHoliday, setNewHoliday] = useState({ name: '', date: '', category: 'federal' as HolidayType });
 
-    const calendar = holidayCalendars[0];
-    const holidays = calendar?.holidays.filter((h) => {
-        const hYear = new Date(h.date).getFullYear();
-        return hYear === year;
-    }) || [];
+    const calendar = holidayCalendars.find(c => c.type === activeTab && c.year === year);
+    const holidays = calendar?.holidays || [];
 
     const handleAddHoliday = () => {
         if (newHoliday.name && newHoliday.date) {
+            addHoliday(activeTab, year, { name: newHoliday.name, date: newHoliday.date, category: newHoliday.category });
             addToast(`Holiday "${newHoliday.name}" added.`, 'success');
             setShowAddModal(false);
             setNewHoliday({ name: '', date: '', category: 'federal' });
@@ -146,10 +145,10 @@ export default function HolidayCalendarManager() {
                                         >
                                             <div>
                                                 <div style={{ fontSize: 'var(--font-size-xs)', fontWeight: 600 }}>
-                                                    {new Date(h.date + 'T00:00:00').getDate()} — {h.name}
+                                                    {new Date(h.date + 'T00:00:00').getDate()} - {h.name}
                                                 </div>
                                             </div>
-                                            <button className="btn btn-ghost" style={{ padding: '2px' }}>
+                                            <button className="btn btn-ghost" style={{ padding: '2px' }} onClick={() => deleteHoliday(activeTab, year, h.id)}>
                                                 <Trash2 size={12} />
                                             </button>
                                         </div>
@@ -210,7 +209,7 @@ export default function HolidayCalendarManager() {
                                             </span>
                                         </td>
                                         <td>
-                                            <button className="btn btn-ghost btn-sm"><Trash2 size={14} /></button>
+                                            <button className="btn btn-ghost btn-sm" onClick={() => deleteHoliday(activeTab, year, h.id)}><Trash2 size={14} /></button>
                                         </td>
                                     </tr>
                                 ))
@@ -226,7 +225,9 @@ export default function HolidayCalendarManager() {
                     <div className="modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
                             <h3 className="modal-title">Add Holiday</h3>
-                            <button className="btn btn-ghost btn-icon" onClick={() => setShowAddModal(false)}>×</button>
+                            <button className="btn btn-ghost btn-icon" onClick={() => setShowAddModal(false)}>
+                                <X size={20} />
+                            </button>
                         </div>
                         <div className="modal-body">
                             <div className="form-group">
@@ -250,7 +251,7 @@ export default function HolidayCalendarManager() {
                             </div>
                             <div className="form-group">
                                 <label className="form-label">Category</label>
-                                <select
+                                <Select
                                     className="form-select"
                                     value={newHoliday.category}
                                     onChange={(e) => setNewHoliday({ ...newHoliday, category: e.target.value as HolidayType })}
@@ -259,7 +260,7 @@ export default function HolidayCalendarManager() {
                                     <option value="client">Client Holiday</option>
                                     <option value="provider">Provider Holiday</option>
                                     <option value="custom">Custom</option>
-                                </select>
+                                </Select>
                             </div>
                         </div>
                         <div className="modal-footer">

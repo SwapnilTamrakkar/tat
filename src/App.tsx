@@ -1,5 +1,5 @@
 // ============================================================
-// TAT Rule Engine — App Router
+// TAT Rule Engine â€” App Router
 // ============================================================
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import AppLayout from './components/layouts/AppLayout';
@@ -10,7 +10,7 @@ import WorkScheduleEditor from './components/features/schedules/WorkScheduleEdit
 import HolidayCalendarManager from './components/features/holidays/HolidayCalendarManager';
 import AuditLog from './components/features/audit/AuditLog';
 import CaseDebugger from './components/features/rules/CaseDebugger';
-import TenantRegistry from './components/features/tenants/TenantRegistry';
+import ProviderRegistry from './components/features/providers/ProviderRegistry';
 
 export default function App() {
   return (
@@ -23,7 +23,7 @@ export default function App() {
           <Route path="/rules/:ruleId/edit" element={<RuleBuilderWizard />} />
           <Route path="/settings/schedules" element={<WorkScheduleEditor />} />
           <Route path="/settings/holidays" element={<HolidayCalendarManager />} />
-          <Route path="/settings/tenants" element={<TenantRegistry />} />
+          <Route path="/settings/providers" element={<ProviderRegistry />} />
           <Route path="/debug" element={<CaseDebugger />} />
           <Route path="/audit" element={<AuditLog />} />
         </Route>

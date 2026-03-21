@@ -3,6 +3,7 @@ import { useRuleStore, useUIStore } from '../../../stores';
 import { PATTERN_LABELS, UNIT_LABELS } from '../../../constants';
 import type { TATRule } from '../../../types';
 import { Search, Info, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Select } from '../../ui/Select';
 import '../../ui/ui.css';
 
 export default function CaseDebugger() {
@@ -60,15 +61,15 @@ export default function CaseDebugger() {
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 'var(--space-4)' }}>
                         <div className="form-group">
                             <label>Case Type</label>
-                            <select className="form-control" value={caseType} onChange={(e) => setCaseType(e.target.value)}>
+                            <Select className="form-select" value={caseType} onChange={(e) => setCaseType(e.target.value)}>
                                 <option value="IP">Inpatient (IP)</option>
                                 <option value="OP">Outpatient (OP)</option>
-                            </select>
+                            </Select>
                         </div>
                         <div className="form-group">
                             <label>Service Type (e.g., Intensive Rehabilitation)</label>
                             <input 
-                                className="form-control" 
+                                className="form-input" 
                                 type="text"
                                 placeholder="Service Type..."
                                 value={serviceType}
@@ -78,7 +79,7 @@ export default function CaseDebugger() {
                         <div className="form-group">
                             <label>Request Type (e.g., Expedited)</label>
                             <input 
-                                className="form-control" 
+                                className="form-input" 
                                 type="text"
                                 placeholder="Request Type..."
                                 value={requestType}

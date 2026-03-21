@@ -7,6 +7,7 @@ import { EVENT_FIELDS, EVENT_FIELD_VALUES } from '../../../types';
 import type { EventCondition, ClockPattern, DurationUnit, StartMode, ThresholdLevel } from '../../../types';
 import { PATTERN_LABELS, UNIT_LABELS, THRESHOLD_COLORS } from '../../../constants';
 import ClockTimelinePreview from './ClockTimelinePreview';
+import { Select } from '../../ui/Select';
 import '../../ui/ui.css';
 
 const PATTERN_DESCRIPTIONS: Record<string, string> = {
@@ -84,11 +85,11 @@ export default function Step2PrimaryClock() {
                 {conditions.map((cond, idx) => (
                     <div key={cond.id} className="condition-row">
                         {idx > 0 && (
-                            <span style={{ fontSize: 'var(--font-size-xs)', fontWeight: 700, color: 'var(--color-primary)', width: 30, textAlign: 'center', background: 'var(--color-primary-light)', borderRadius: 4, padding: '2px 0' }}>
+                            <span style={{ fontSize: 'var(--font-size-xs)', fontWeight: 700, color: 'var(--color-primary)', width: 30, textAlign: 'center', background: 'var(--color-primary-50)', borderRadius: 4, padding: '2px 0' }}>
                                 AND
                             </span>
                         )}
-                        <select
+                        <Select
                             className="form-select"
                             value={cond.field}
                             onChange={(e) => updateCondition(eventType, cond.id, 'field', e.target.value)}
@@ -96,8 +97,8 @@ export default function Step2PrimaryClock() {
                             {EVENT_FIELDS.map((f) => (
                                 <option key={f} value={f}>{f}</option>
                             ))}
-                        </select>
-                        <select
+                        </Select>
+                        <Select
                             className="form-select"
                             style={{ maxWidth: 90 }}
                             value={cond.operator}
@@ -106,8 +107,8 @@ export default function Step2PrimaryClock() {
                             <option value="=">equals</option>
                             <option value="!=">≠ not</option>
                             <option value="contains">contains</option>
-                        </select>
-                        <select
+                        </Select>
+                        <Select
                             className="form-select"
                             value={cond.value}
                             style={{ borderColor: !cond.value ? 'var(--color-danger)' : undefined }}
@@ -117,7 +118,7 @@ export default function Step2PrimaryClock() {
                             {(EVENT_FIELD_VALUES[cond.field] || []).map((v) => (
                                 <option key={v} value={v}>{v}</option>
                             ))}
-                        </select>
+                        </Select>
                         <button
                             className="condition-remove"
                             onClick={() => removeCondition(eventType, cond.id)}
@@ -192,7 +193,7 @@ export default function Step2PrimaryClock() {
                     </div>
                     <div className="form-group">
                         <label className="form-label">Unit</label>
-                        <select
+                        <Select
                             className="form-select"
                             value={primaryClock.durationUnit}
                             onChange={(e) => setPrimaryClock({ durationUnit: e.target.value as DurationUnit })}
@@ -200,7 +201,7 @@ export default function Step2PrimaryClock() {
                             {Object.entries(UNIT_LABELS).map(([k, v]) => (
                                 <option key={k} value={k}>{v}</option>
                             ))}
-                        </select>
+                        </Select>
                     </div>
                 </div>
 
@@ -218,7 +219,7 @@ export default function Step2PrimaryClock() {
                                     border: `1.5px solid ${primaryClock.pattern === key ? 'var(--color-primary)' : 'var(--color-border)'}`,
                                     borderRadius: 'var(--radius-lg)',
                                     cursor: 'pointer',
-                                    background: primaryClock.pattern === key ? 'var(--color-primary-light)' : 'var(--color-surface)',
+                                    background: primaryClock.pattern === key ? 'var(--color-primary-50)' : 'var(--color-surface)',
                                     transition: 'all 0.15s ease',
                                 }}
                             >
@@ -339,7 +340,7 @@ export default function Step2PrimaryClock() {
                                 value={threshold.offsetValue}
                                 onChange={(e) => updateThreshold(threshold.level, 'offsetValue', parseInt(e.target.value) || 0)}
                             />
-                            <select
+                            <Select
                                 className="form-select"
                                 style={{ width: 100 }}
                                 disabled={!threshold.enabled}
@@ -348,7 +349,7 @@ export default function Step2PrimaryClock() {
                             >
                                 <option value="hours">Hours</option>
                                 <option value="days">Days</option>
-                            </select>
+                            </Select>
                             <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-tertiary)' }}>
                                 before deadline
                             </span>

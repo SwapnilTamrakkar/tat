@@ -1,11 +1,11 @@
 // ============================================================
-// TAT Rule Engine — Zustand Store
+// TAT Rule Engine â€” Zustand Store
 // ============================================================
 import { create } from 'zustand';
 import type {
     TATRule, RuleStatus, WizardStep, MatchCriteria, ClockConfig,
     ExclusionOption, WorkSchedule, HolidayCalendar, AuditLogEntry,
-    Tenant
+    Provider
 } from '../types';
 import {
     createDefaultPrimaryClock, createDefaultSecondaryClock,
@@ -26,6 +26,7 @@ interface RuleStore {
     deactivateRule: (id: string) => void;
     archiveRule: (id: string) => void;
     getRule: (id: string) => TATRule | undefined;
+    deactivateRulesForProvider: (providerId: string) => void;
 }
 
 export const useRuleStore = create<RuleStore>((set, get) => ({
@@ -83,6 +84,15 @@ export const useRuleStore = create<RuleStore>((set, get) => ({
         })),
 
     getRule: (id) => get().rules.find((r) => r.id === id),
+
+    deactivateRulesForProvider: (providerId: string) =>
+        set((state) => ({
+            rules: state.rules.map((r) =>
+                r.providerId === providerId && r.status === 'active'
+                    ? { ...r, status: 'draft' as RuleStatus, updatedAt: new Date().toISOString() }
+                    : r
+            ),
+        })),
 }));
 
 // ---- Wizard Store ----
@@ -160,7 +170,7 @@ export const useWizardStore = create<WizardStore>((set, get) => ({
     buildRule: () => {
         const s = get();
         return {
-            tenantId: 'tenant-1',
+            providerId: 'provider-1',
             ruleName: s.ruleName,
             status: 'draft' as RuleStatus,
             version: 1,
@@ -177,20 +187,27 @@ export const useWizardStore = create<WizardStore>((set, get) => ({
     },
 }));
 
-// ---- Tenant Store ----
-interface TenantStore {
-    tenants: Tenant[];
-    currentTenantId: string;
+// ---- Provider Store ----
+interface ProviderStore {
+    providers: Provider[];
+    currentProviderId: string;
     workSchedules: WorkSchedule[];
     holidayCalendars: HolidayCalendar[];
     auditLog: AuditLogEntry[];
     addAuditEntry: (entry: Omit<AuditLogEntry, 'id' | 'timestamp'>) => void;
+    addProvider: (provider: Omit<Provider, 'id' | 'createdAt' | 'status' | 'workScheduleId' | 'holidayCalendarIds'>) => void;
+    updateProviderStatus: (id: string, status: 'active' | 'inactive') => void;
+    addWorkSchedule: (schedule: Omit<WorkSchedule, 'id'>) => void;
+    updateWorkSchedule: (id: string, updates: Partial<WorkSchedule>) => void;
+    setDefaultWorkSchedule: (providerId: string, scheduleId: string) => void;
+    addHoliday: (type: string, year: number, holiday: any) => void;
+    deleteHoliday: (type: string, year: number, holidayId: string) => void;
 }
 
-export const useTenantStore = create<TenantStore>((set) => ({
-    tenants: [
+export const useProviderStore = create<ProviderStore>((set) => ({
+    providers: [
         {
-            id: 'tenant-1',
+            id: 'provider-1',
             name: 'Acme Healthcare',
             code: 'ACME',
             status: 'active',
@@ -200,11 +217,11 @@ export const useTenantStore = create<TenantStore>((set) => ({
             createdAt: '2025-01-15T00:00:00Z',
         },
     ],
-    currentTenantId: 'tenant-1',
+    currentProviderId: 'provider-1',
     workSchedules: [
         {
             id: 'ws-1',
-            tenantId: 'tenant-1',
+            providerId: 'provider-1',
             name: 'Default Schedule',
             isDefault: true,
             daySlots: DEFAULT_DAY_SLOTS,
@@ -213,9 +230,9 @@ export const useTenantStore = create<TenantStore>((set) => ({
     holidayCalendars: [
         {
             id: 'hc-1',
-            tenantId: 'tenant-1',
+            providerId: 'provider-1',
             type: 'client',
-            name: 'US Federal Holidays 2025',
+            name: 'US Federal Holidays',
             year: 2025,
             holidays: [
                 { id: '1', date: '2025-01-01', name: "New Year's Day", category: 'federal', isActive: true },
@@ -228,14 +245,102 @@ export const useTenantStore = create<TenantStore>((set) => ({
                 { id: '8', date: '2025-12-25', name: 'Christmas Day', category: 'federal', isActive: true },
             ],
         },
+        {
+            id: 'hc-2',
+            providerId: 'provider-1',
+            type: 'provider',
+            name: 'Provider Office Closure',
+            year: 2025,
+            holidays: [
+                { id: '9', date: '2025-11-28', name: "Day After Thanksgiving", category: 'provider', isActive: true },
+                { id: '10', date: '2025-12-24', name: "Christmas Eve (Half Day)", category: 'provider', isActive: true },
+            ],
+        },
+        {
+            id: 'hc-3',
+            providerId: 'provider-1',
+            type: 'custom',
+            name: 'Custom Team Events',
+            year: 2025,
+            holidays: [
+                { id: '11', date: '2025-08-15', name: "Company Wellness Day", category: 'custom', isActive: true },
+            ],
+        },
     ],
     auditLog: [],
+    addHoliday: (type, year, holiday) => set((state) => {
+        const calendars = [...state.holidayCalendars];
+        const calIndex = calendars.findIndex(c => c.type === type && c.year === year);
+        if (calIndex > -1) {
+            calendars[calIndex] = { ...calendars[calIndex], holidays: [...calendars[calIndex].holidays, { ...holiday, id: crypto.randomUUID(), isActive: true }] };
+        } else {
+            calendars.push({ id: crypto.randomUUID(), providerId: state.currentProviderId, type: type as any, year, name: `${type} holidays`, holidays: [{ ...holiday, id: crypto.randomUUID(), isActive: true }] });
+        }
+        return { holidayCalendars: calendars };
+    }),
+    deleteHoliday: (type, year, holidayId) => set((state) => {
+        const calendars = state.holidayCalendars.map(c => {
+            if (c.type === type && c.year === year) {
+                return { ...c, holidays: c.holidays.filter(h => h.id !== holidayId) };
+            }
+            return c;
+        });
+        return { holidayCalendars: calendars };
+    }),
     addAuditEntry: (entry) =>
         set((state) => ({
             auditLog: [
                 { ...entry, id: crypto.randomUUID(), timestamp: new Date().toISOString() },
                 ...state.auditLog,
             ],
+        })),
+    addProvider: (provider) =>
+        set((state) => ({
+            providers: [...state.providers, {
+                ...provider,
+                id: crypto.randomUUID(),
+                status: 'active',
+                createdAt: new Date().toISOString(),
+                workScheduleId: 'ws-1', // Default assigned
+                holidayCalendarIds: []
+            }],
+        })),
+    updateProviderStatus: (id, status) =>
+        set((state) => ({
+            providers: state.providers.map((p) =>
+                p.id === id ? { ...p, status } : p
+            ),
+        })),
+    addWorkSchedule: (schedule) =>
+        set((state) => {
+            const newSchedule = { ...schedule, id: crypto.randomUUID() };
+            // If it's default, we need to unset other defaults for the same provider
+            let schedules = [...state.workSchedules, newSchedule];
+            if (newSchedule.isDefault) {
+                schedules = schedules.map(s => s.id === newSchedule.id ? s : { ...s, isDefault: false });
+            }
+            return { workSchedules: schedules };
+        }),
+    updateWorkSchedule: (id, updates) =>
+        set((state) => {
+            let schedules = state.workSchedules.map((s) => s.id === id ? { ...s, ...updates } : s);
+            
+            // Re-check defaults if updates include isDefault = true
+            if (updates.isDefault) {
+                const target = schedules.find(s => s.id === id);
+                if (target) {
+                    schedules = schedules.map(s => 
+                        s.providerId === target.providerId && s.id !== id ? { ...s, isDefault: false } : s
+                    );
+                }
+            }
+            return { workSchedules: schedules };
+        }),
+    setDefaultWorkSchedule: (providerId, scheduleId) =>
+        set((state) => ({
+            workSchedules: state.workSchedules.map((s) =>
+                s.providerId === providerId ? { ...s, isDefault: s.id === scheduleId } : s
+            ),
         })),
 }));
 

@@ -153,7 +153,7 @@ export default function Step1MatchingCriteria({ effectiveFrom = '', effectiveTo 
                                 setMatchCriteria({ caseType: ct, serviceTypes: [] });
                             }}
                         >
-                            {ct === 'IP' ? '🏥 Inpatient (IP)' : ct === 'OP' ? '🏢 Outpatient (OP)' : '🔄 Both'}
+                            {ct === 'IP' ? 'Inpatient (IP)' : ct === 'OP' ? 'Outpatient (OP)' : 'Both'}
                         </button>
                     ))}
                 </div>
@@ -280,7 +280,7 @@ export default function Step1MatchingCriteria({ effectiveFrom = '', effectiveTo 
                                     border: `1.5px solid ${selected ? 'var(--color-primary)' : 'var(--color-border)'}`,
                                     borderRadius: 'var(--radius-lg)',
                                     cursor: 'pointer',
-                                    background: selected ? 'var(--color-primary-light)' : 'var(--color-surface)',
+                                    background: selected ? 'var(--color-primary-50)' : 'var(--color-surface)',
                                     transition: 'all 0.15s ease',
                                     userSelect: 'none',
                                 }}
