@@ -1,13 +1,14 @@
 // ============================================================
 // App Layout â€” Sidebar + Header + Content
 // ============================================================
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { useState, useRef, useEffect } from 'react';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard, FileCog, Settings, Calendar, Clock, FileText,
     ChevronLeft, ChevronRight, Bell, Search, CheckCircle,
     XCircle, AlertTriangle, Info, X, Building2
 } from 'lucide-react';
-import { useUIStore } from '../../stores';
+import { useUIStore, useProviderStore } from '../../stores';
 import heroLogo from '../../assets/hero.jpg';
 import './Layout.css';
 
@@ -42,7 +43,50 @@ const toastIcons = {
 
 export default function AppLayout() {
     const { sidebarCollapsed, toggleSidebar, toasts, removeToast } = useUIStore();
+    const { addAuditEntry } = useProviderStore();
     const location = useLocation();
+    const navigate = useNavigate();
+
+    const [showNotifications, setShowNotifications] = useState(false);
+    const [notifications, setNotifications] = useState([
+        { 
+            id: 1, 
+            title: 'Action Required: Provider Request',
+            message: 'Provider asked for further docs - Secondary Clock gets ON.', 
+            isRead: false,
+            time: 'Just now'
+        }
+    ]);
+    const notifRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
+                setShowNotifications(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const handleNotificationClick = (notif: typeof notifications[0]) => {
+        if (!notif.isRead) {
+            addAuditEntry({
+                userId: 'admin',
+                userName: 'Config Analyst',
+                providerId: 'provider-1',
+                actionType: 'updated',
+                entityType: 'rule',
+                entityName: 'Secondary Clock',
+                entityId: 'rule-event',
+                changeSummary: 'Secondary Clock ON: Provider requested further documentation.',
+            });
+            setNotifications(notifications.map(n => n.id === notif.id ? { ...n, isRead: true } : n));
+            setShowNotifications(false);
+            useUIStore.getState().addToast('Notification processed. Audit log updated.', 'success');
+            navigate('/audit');
+        }
+    };
 
     const getPageTitle = () => {
         if (location.pathname === '/') return 'TAT Clock Engine';
@@ -101,9 +145,75 @@ export default function AppLayout() {
                         <button className="sidebar-toggle" style={{ width: 36, height: 36, border: 'none', background: 'var(--color-bg-secondary)' }}>
                             <Search size={16} />
                         </button>
-                        <button className="sidebar-toggle" style={{ width: 36, height: 36, border: 'none', background: 'var(--color-bg-secondary)', position: 'relative' }}>
-                            <Bell size={16} />
-                        </button>
+                        
+                        <div ref={notifRef} style={{ position: 'relative' }}>
+                            <button 
+                                className="sidebar-toggle" 
+                                style={{ width: 36, height: 36, border: 'none', background: 'var(--color-bg-secondary)', position: 'relative' }}
+                                onClick={() => setShowNotifications(!showNotifications)}
+                            >
+                                <Bell size={16} />
+                                {notifications.some(n => !n.isRead) && (
+                                    <span style={{
+                                        position: 'absolute',
+                                        top: 6,
+                                        right: 8,
+                                        width: 8,
+                                        height: 8,
+                                        backgroundColor: 'var(--color-danger)',
+                                        borderRadius: '50%'
+                                    }}></span>
+                                )}
+                            </button>
+                            {showNotifications && (
+                                <div style={{
+                                    position: 'absolute',
+                                    top: '120%',
+                                    right: 0,
+                                    width: 320,
+                                    background: 'var(--color-surface)',
+                                    border: '1px solid var(--color-border)',
+                                    borderRadius: 'var(--radius-lg)',
+                                    boxShadow: 'var(--shadow-lg)',
+                                    zIndex: 100,
+                                    overflow: 'hidden'
+                                }}>
+                                    <div style={{ padding: 'var(--space-3) var(--space-4)', borderBottom: '1px solid var(--color-border)', fontWeight: 600 }}>
+                                        Notifications
+                                    </div>
+                                    <div style={{ maxHeight: 300, overflowY: 'auto' }}>
+                                        {notifications.length === 0 ? (
+                                            <div style={{ padding: 'var(--space-4)', textAlign: 'center', color: 'var(--color-text-tertiary)' }}>
+                                                No notifications
+                                            </div>
+                                        ) : (
+                                            notifications.map(notif => (
+                                                <div 
+                                                    key={notif.id} 
+                                                    onClick={() => handleNotificationClick(notif)}
+                                                    style={{ 
+                                                        padding: 'var(--space-3) var(--space-4)', 
+                                                        borderBottom: '1px solid var(--color-border-light)',
+                                                        cursor: notif.isRead ? 'default' : 'pointer',
+                                                        backgroundColor: notif.isRead ? 'var(--color-bg)' : 'var(--color-primary-50)',
+                                                        transition: 'background-color var(--transition-fast)'
+                                                    }}
+                                                >
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                                                        <span style={{ fontWeight: 600, fontSize: 'var(--font-size-sm)', color: 'var(--color-text-primary)' }}>{notif.title}</span>
+                                                        <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-tertiary)' }}>{notif.time}</span>
+                                                    </div>
+                                                    <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
+                                                        {notif.message}
+                                                    </div>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
                         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
                             <div className="header-avatar">CA</div>
                             <div style={{ display: 'flex', flexDirection: 'column' }}>
