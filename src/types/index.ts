@@ -154,6 +154,7 @@ export interface Provider {
     workScheduleId: string;
     holidayCalendarIds: string[];
     createdAt: string;
+    effectiveStartDate?: string;
 }
 
 // --- Work Schedule ---

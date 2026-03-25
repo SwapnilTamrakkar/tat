@@ -1,0 +1,1682 @@
+
+
+CLOCK RULE ENGINE
+
+Configuration & Management Web Application
+
+End-to-End User Stories & Acceptance Criteria
+
+
+
+Document Type
+
+User Stories + Acceptance Criteria
+
+Product
+
+Clock Rule Engine – Web App
+
+Version
+
+1.0
+
+Status
+
+Draft – For Review
+
+Prepared For
+
+Product / Engineering Team
+
+
+
+1. Product Overview
+
+The Clock Rule Engine is a no-code, browser-based configuration application that allows business users — such as operations managers, configuration analysts, and compliance officers — to define, manage, and test time-tracking rules for case management workflows.
+
+A rule specifies: when a case matches certain criteria (case type, service type, request type, etc.), start, stop, pause, or extend a named clock with a specific duration, threshold alerts, holiday and weekend exclusions, and chaining behavior.
+
+
+
+1.1 Key Personas
+
+Persona
+
+Role
+
+Primary Goal
+
+Configuration Analyst
+
+Business User (Power)
+
+Build, edit, clone, and activate clock rules without developer help
+
+Operations Manager
+
+Business User (Viewer)
+
+Review active rules, test rules against real case data, approve changes
+
+Compliance Officer
+
+Stakeholder
+
+Verify rules conform to regulatory TAT requirements
+
+System Administrator
+
+IT Admin
+
+Register tenants, manage work schedules and holidays, control access
+
+Developer / QA
+
+Technical
+
+Use rule test simulator to validate logic before promoting to production
+
+
+
+1.2 Data Foundation (from TAT Rules Matrix)
+
+The following session/request type combinations drive rule configuration and must be fully supported by the UI:
+
+IP (Inpatient): Inpatient Admission, Inpatient Psychiatric, Intensive Rehabilitation, MH Extended Bed ≥45 Day
+
+Standard requests: Admission, Prior Auth, Retrospective, Reconsideration → 7-Day TAT / 2-Day Yellow / 1-Day Red / Calendar Days / Next Day Clock / Secondary Clock: YES, 10 Days
+
+Expedited requests → 72-Hour TAT / 36-Hour Yellow / 24-Hour Red / Flat Hours / Same Day / Secondary Clock: NO
+
+OP (Outpatient): Ambulance, Chiropractic, CMOE, Dental-Office, DME, EDBI, Hearing Aids, Home Care Nursing, Home Health, Imaging Studies, Laboratory, Mental Health Services, Occupational Therapy, Physical Therapy, Physician Services, Prosthetics, Substance Abuse, Vision Care
+
+Standard: 7-Day TAT / 2-Day Yellow / 1-Day Red / Calendar Days / Next Day / Secondary Clock: YES, 10 Days
+
+Physician Services Expedited (OP): 72-Hour TAT / 36-Hour Yellow / 18-Hour Red / Flat Hours / Same Day / Secondary Clock: NO, 10 Days
+
+Primary Clock Pause/Resume: triggered by Line Status = Pending + Certified Reason = Additional Info pend + Task Name = Request Additional Info + Task Status = Open.
+
+
+
+2. Epic Structure
+
+Epic ID
+
+Epic Name
+
+Description
+
+EP-01
+
+Tenant & Application Setup
+
+Register tenants, configure work schedules and holidays
+
+EP-02
+
+Rule Builder – Matching Criteria
+
+Define the "when" conditions: case type, service type, request type, intake method, category
+
+EP-03
+
+Rule Builder – Clock Behavior
+
+Configure clock actions, duration, offsets, thresholds, exclusions, chaining
+
+EP-04
+
+Rule Management
+
+List, search, filter, activate, deactivate, version, clone, and delete rules
+
+EP-05
+
+Rule Test Simulator
+
+Test rules against sample or real case inputs before activating
+
+EP-06
+
+Audit & Change History
+
+Track who changed what and when; support rollback
+
+EP-07
+
+Access Control & Permissions
+
+Role-based access: viewer, editor, approver, admin
+
+EP-08
+
+UX – Usability & Accessibility
+
+Inline validation, tooltips, guided wizard, keyboard nav, WCAG 2.1 AA
+
+
+
+3. User Stories
+
+EP-01 · Tenant & Application Setup
+
+
+
+Story ID
+
+US-01-01
+
+Priority
+
+Must Have
+
+Title
+
+Register a New Tenant
+
+As a...
+
+System Administrator
+
+I want to...
+
+register a new tenant organization with a unique name, code, and time zone
+
+So that...
+
+each client's clock rules and schedules are isolated and independently configurable
+
+Story Points
+
+5
+
+Sprint
+
+TBD
+
+Acceptance Criteria
+
+AC-01  A form accepts tenant name, short code (alphanumeric, unique), primary time zone, and effective start date.
+
+AC-02  Duplicate tenant codes are rejected with a clear inline error message.
+
+AC-03  Upon successful registration, the tenant appears in the tenant list with status 'Active'.
+
+AC-04  Admin receives a confirmation toast notification.
+
+AC-05  All fields have labels, placeholders, and helper text explaining accepted formats.
+
+AC-06  Time zone selector is a searchable dropdown with UTC offset displayed.
+
+Notes / Edge Cases
+
+Tenant code must be immutable after creation — show a warning banner if user attempts to edit it.
+
+Deactivated tenants retain all rule history but cannot execute clock evaluations.
+
+
+
+Story ID
+
+US-01-02
+
+Priority
+
+Must Have
+
+Title
+
+Configure Tenant Work Schedule
+
+As a...
+
+System Administrator
+
+I want to...
+
+set the business hours for each day of the work week for a tenant
+
+So that...
+
+clock durations expressed in 'business hours' are calculated against the correct schedule
+
+Story Points
+
+5
+
+Sprint
+
+TBD
+
+Acceptance Criteria
+
+AC-01  A weekly schedule grid shows Mon–Sun with toggles for 'working day' and time pickers for start/end time.
+
+AC-02  Individual days can be marked as non-working (e.g., Saturday, Sunday) — those days are greyed out and excluded from business-hour calculations.
+
+AC-03  System validates that end time is after start time; overlapping or invalid ranges show inline errors.
+
+AC-04  Changes take effect on a user-specified date (not immediately), allowing future scheduling.
+
+AC-05  A preview panel shows 'Total business hours per week' recalculated live.
+
+AC-06  Multiple schedule versions are supported with effective date ranges; historical schedules are preserved.
+
+Notes / Edge Cases
+
+If no schedule is defined, system defaults to Mon–Fri 09:00–17:00 and shows a warning banner on the tenant dashboard.
+
+Schedule changes must not affect already-running clocks — only new clock evaluations use the updated schedule.
+
+
+
+Story ID
+
+US-01-03
+
+Priority
+
+Must Have
+
+Title
+
+Manage Tenant Holiday Calendar
+
+As a...
+
+System Administrator
+
+I want to...
+
+add, edit, and delete holidays for a tenant with optional categorization
+
+So that...
+
+clock calculations correctly skip designated holidays when exclusions are configured
+
+Story Points
+
+5
+
+Sprint
+
+TBD
+
+Acceptance Criteria
+
+AC-01  Admin can add a holiday with: name, date (date picker), recurrence (one-time or annual), and category (Client Holiday, Provider Holiday, Federal Holiday, or custom).
+
+AC-02  Holidays are listed in a sortable, filterable table (by year, category, name).
+
+AC-03  Bulk import via CSV is supported with a downloadable template and validation report on upload.
+
+AC-04  Duplicate dates for the same category show a warning (not a hard block — intentional duplicates allowed with confirmation).
+
+AC-05  Admin can toggle holidays active/inactive without deleting them.
+
+AC-06  A calendar view tab shows holidays visually overlaid on a monthly grid.
+
+Notes / Edge Cases
+
+Holiday categories must align with the 'Holiday Exclusion' options on clock rules (Client, Provider, or None).
+
+Annual recurrence must auto-generate the next year's entry 90 days in advance (background job).
+
+
+
+EP-02 · Rule Builder — Matching Criteria
+
+
+
+Story ID
+
+US-02-01
+
+Priority
+
+Must Have
+
+Title
+
+Create a New Clock Rule — Step 1: Matching Criteria
+
+As a...
+
+Configuration Analyst
+
+I want to...
+
+define the conditions that determine which cases a clock rule applies to
+
+So that...
+
+only the intended cases trigger this clock, avoiding unintended side effects
+
+Story Points
+
+8
+
+Sprint
+
+TBD
+
+Acceptance Criteria
+
+AC-01  A multi-step wizard opens with Step 1 titled 'When does this rule apply?'
+
+AC-02  Analyst can select one or more values for each of: Case Type (multiselect), Intake Method (multiselect), Service Type (multiselect with search), Request Type (multiselect), Request Category (multiselect).
+
+AC-03  A 'Match Logic' toggle lets user choose AND (all criteria must match) or OR (any criterion matches) — default is AND.
+
+AC-04  A live 'Rule Preview' panel on the right side updates in real time showing a plain-English summary: e.g. 'This rule applies when: Case Type is Inpatient Admission AND Service Type is Prior Auth AND IP/OP is IP.'
+
+AC-05  Each criteria field has an 'Any' option that matches all values for that dimension.
+
+AC-06  Validation prevents proceeding if no criteria are selected (at least one field must be specified).
+
+AC-07  Selecting 'Service Type = Physician Services' + 'Request Type = Expedited' + 'IP/OP = OP' auto-fills a suggestion hint for 72-Hour TAT based on the TAT matrix.
+
+Notes / Edge Cases
+
+Criteria combinations must be checked for conflicts with existing active rules; warn (not block) if an overlap is detected.
+
+IP/OP is automatically inferred from Case Type but can be overridden manually.
+
+The step must support at minimum the full list of service types from the TAT matrix (18 OP types + 4 IP types).
+
+
+
+Story ID
+
+US-02-02
+
+Priority
+
+Must Have
+
+Title
+
+Edit Matching Criteria on an Existing Rule
+
+As a...
+
+Configuration Analyst
+
+I want to...
+
+modify the matching criteria of an existing clock rule
+
+So that...
+
+I can correct misconfigured rules without creating a new one from scratch
+
+Story Points
+
+5
+
+Sprint
+
+TBD
+
+Acceptance Criteria
+
+AC-01  Existing criteria are pre-populated in the wizard Step 1 when editing.
+
+AC-02  If the rule is 'Active', editing transitions it to 'Draft (Pending Review)' and shows a banner explaining this.
+
+AC-03  A diff view shows what changed (before vs. after) before saving.
+
+AC-04  The analyst can cancel at any step and revert all changes.
+
+AC-05  If matching criteria are changed to overlap with another active rule, a warning modal lists the conflicting rules.
+
+Notes / Edge Cases
+
+Rules used in production (status = Active) require an explicit confirmation step before saving edits.
+
+
+
+EP-03 · Rule Builder — Clock Behavior
+
+
+
+Story ID
+
+US-03-01
+
+Priority
+
+Must Have
+
+Title
+
+Configure Primary Clock Behavior
+
+As a...
+
+Configuration Analyst
+
+I want to...
+
+define the clock action, name, duration, unit, and time pattern for the primary clock
+
+So that...
+
+the system knows exactly how long to run the clock and how to measure it
+
+Story Points
+
+8
+
+Sprint
+
+TBD
+
+Acceptance Criteria
+
+AC-01  Step 2 of the wizard is titled 'How should the clock behave?'
+
+AC-02  Analyst selects Clock Name: 'Primary' or a custom name (free text, max 50 chars).
+
+AC-03  Clock Action: Start, Stop, Pause, Resume, or Extend — rendered as a radio button group with icons.
+
+AC-04  Duration: numeric input + unit dropdown (Business Hours, Calendar Days, Flat Hours, Standard Days).
+
+AC-05  Pattern: dropdown with 'Calendar Days' and 'Flat Hours' as supported options; auto-selected based on IP/OP type with override allowed.
+
+AC-06  Same Day / Next Day toggle: determines if the clock starts on the triggering event day or the following day.
+
+AC-07  Offset Delay: optional field — 'Start clock X hours/days after trigger event' with numeric + unit input.
+
+AC-08  Real-time preview reads: e.g. 'Primary clock starts on the next calendar day, runs for 7 calendar days after Line Status = Submitted.'
+
+AC-09  If action is 'Extend', a field appears for 'Extend by (duration + unit)'.
+
+Notes / Edge Cases
+
+Duration and unit combinations must be validated: e.g., 'Business Hours' requires a work schedule to be configured.
+
+Flat Hours and Business Hours are mutually exclusive with Calendar Days / Standard Days — show a warning if inconsistent patterns are mixed in chained rules.
+
+Physician Services Expedited OP uses 18-Hour Red Alert — ensure custom values are not restricted.
+
+
+
+Story ID
+
+US-03-02
+
+Priority
+
+Must Have
+
+Title
+
+Configure Clock Pause and Resume Conditions
+
+As a...
+
+Configuration Analyst
+
+I want to...
+
+define the exact field conditions that pause and then resume a clock
+
+So that...
+
+the clock accurately stops counting during pending periods and resumes when information is received
+
+Story Points
+
+8
+
+Sprint
+
+TBD
+
+Acceptance Criteria
+
+AC-01  A collapsible 'Pause / Resume' section appears below the clock action fields.
+
+AC-02  Pause Condition builder: analyst adds one or more field=value pairs using a condition row builder (field dropdown + operator dropdown + value input). Multiple rows are AND-joined.
+
+AC-03  Default Pause Condition rows are pre-filled based on session type selection: Line Status = Pending, Certified Reason = Additional Info - pend, Task Name = Request Additional Info, Task Status = Open.
+
+AC-04  Resume Condition builder works identically; default is: Line Status = Pending, Certified Reason = Additional Info - pend, Task Name = Additional Information Received, Task Status = Open.
+
+AC-05  User can add, remove, or modify individual condition rows.
+
+AC-06  If Clock Action is not 'Pause' or 'Resume', this section is hidden.
+
+AC-07  A 'Test Pause Logic' button opens a mini-simulator to input field values and verify the condition evaluates as expected.
+
+AC-08  If Expedited request type is selected, Pause fields are auto-set to NA and the section is disabled with a tooltip explaining why.
+
+Notes / Edge Cases
+
+NA (not applicable) pause/resume is valid and must be explicitly stored — not null — so the engine skips evaluation.
+
+Condition rows must support at minimum: Line Status, Certified Reason, Task Name, Task Status, and any custom field registered for the tenant.
+
+
+
+Story ID
+
+US-03-03
+
+Priority
+
+Must Have
+
+Title
+
+Configure Threshold Alerts (Yellow / Red)
+
+As a...
+
+Configuration Analyst
+
+I want to...
+
+set warning thresholds at configurable intervals before the clock deadline
+
+So that...
+
+operations staff are alerted in time to act on cases approaching or exceeding TAT
+
+Story Points
+
+5
+
+Sprint
+
+TBD
+
+Acceptance Criteria
+
+AC-01  A 'Thresholds' section shows three alert levels: Warning (Yellow), Attention (Amber), and Overdue (Red).
+
+AC-02  Each threshold accepts a numeric value + unit (Hours or Days) representing time remaining before deadline.
+
+AC-03  For IP Standard: Yellow = 2 Days, Red = 1 Day pre-filled; for Expedited: Yellow = 36 Hours, Red = 24 Hours (IP) or 18 Hours (Physician Services OP Expedited) pre-filled.
+
+AC-04  Thresholds must be in descending order (Warning > Attention > Overdue); the UI enforces this with inline validation.
+
+AC-05  A visual timeline preview shows the clock duration bar with colored threshold markers.
+
+AC-06  Thresholds can be individually toggled on/off without deleting the values.
+
+Notes / Edge Cases
+
+If the user enters a Yellow Alert value greater than Total TAT, show a hard validation error blocking save.
+
+Secondary clock thresholds are configured independently on the Secondary Clock section (not shared with primary).
+
+
+
+Story ID
+
+US-03-04
+
+Priority
+
+Must Have
+
+Title
+
+Configure Holiday and Weekend Exclusions
+
+As a...
+
+Configuration Analyst
+
+I want to...
+
+specify whether the clock skips holidays and/or weekends during countdown
+
+So that...
+
+TAT calculations reflect only the working time relevant to the rule
+
+Story Points
+
+5
+
+Sprint
+
+TBD
+
+Acceptance Criteria
+
+AC-01  Three toggle fields appear in the 'Exclusions' section: Consider Holiday to Skip (Yes/No), Consider Holiday (Provided/Contract) (Yes/No), Consider Weekends to Skip (Yes/No).
+
+AC-02  Default values are pre-filled as 'No' for all three, matching the TAT matrix defaults.
+
+AC-03  Enabling 'Consider Holiday to Skip' shows a sub-field: Holiday Type to Exclude (Client Holiday, Provider Holiday, Federal Holiday, All) with a multiselect.
+
+AC-04  Enabling 'Consider Weekends to Skip' highlights Saturday and Sunday as excluded in the work schedule preview panel.
+
+AC-05  A plain-English summary updates: e.g. 'Clock runs 7 calendar days. Weekends and Client Holidays are NOT excluded.'
+
+AC-06  If Clock Pattern = 'Business Hours', weekend exclusion is automatically enabled and locked (cannot be disabled).
+
+Notes / Edge Cases
+
+All three exclusion flags default to 'No' per the TAT matrix — verify this is the UI default, not 'Yes'.
+
+Changing exclusion settings on an active rule must trigger a re-evaluation warning for in-flight clocks.
+
+
+
+Story ID
+
+US-03-05
+
+Priority
+
+Must Have
+
+Title
+
+Configure Clock Chaining (Secondary Clock Trigger)
+
+As a...
+
+Configuration Analyst
+
+I want to...
+
+define an automatic follow-on event that fires when the primary clock is paused or reaches a state
+
+So that...
+
+a secondary clock can be started automatically when the primary is suspended, supporting concurrent multi-clock workflows
+
+Story Points
+
+13
+
+Sprint
+
+TBD
+
+Acceptance Criteria
+
+AC-01  A 'Chaining' section appears below the primary clock configuration.
+
+AC-02  Toggle 'Enable Chaining' ON to reveal the secondary clock configuration block.
+
+AC-03  Trigger Event dropdown: options include On Pause, On Resume, On Stop, On Overdue, On Warning.
+
+AC-04  Secondary Clock block has the same fields as the Primary Clock (Clock Name, Action, Duration, Unit, Pattern, Same Day/Next Day, Thresholds, Exclusions) but labelled as 'Secondary Clock'.
+
+AC-05  Default secondary values for IP/OP Standard rules: Clock Applicable = YES, Total TAT = 10 Days, Yellow = 2 Days, Red = 1 Day.
+
+AC-06  For Expedited rules, Chaining is disabled and toggle is locked to OFF with tooltip: 'Expedited requests do not use a secondary clock.'
+
+AC-07  A visual chain diagram shows Primary Clock → Trigger Event → Secondary Clock with a timeline.
+
+AC-08  The secondary clock's Clock Start condition defaults to the same Pause condition of the primary (auto-filled, editable).
+
+AC-09  The secondary clock's Clock Stop condition defaults to the Resume condition of the primary (auto-filled, editable).
+
+Notes / Edge Cases
+
+Secondary clock chaining must not create infinite loops — the UI must prevent a secondary clock from chaining back to the primary.
+
+If Secondary Clock Applicable = NO (per matrix), the chaining section must be hidden by default.
+
+Both Primary and Secondary clocks run concurrently once chaining is triggered — confirm this mental model in UI tooltips.
+
+
+
+EP-04 · Rule Management
+
+
+
+Story ID
+
+US-04-01
+
+Priority
+
+Must Have
+
+Title
+
+View and Search All Clock Rules
+
+As a...
+
+Configuration Analyst
+
+I want to...
+
+see all configured rules in a searchable, filterable list with key attributes visible at a glance
+
+So that...
+
+I can quickly locate any rule without scrolling through an unfiltered list
+
+Story Points
+
+5
+
+Sprint
+
+TBD
+
+Acceptance Criteria
+
+AC-01  The Rules List page shows a table with columns: Rule Name, Session Type, Request Type, IP/OP, Clock Name, TAT, Status, Last Modified, Modified By.
+
+AC-02  A global search bar filters across rule name, session type, and request type in real time.
+
+AC-03  Filter chips are available for: Status (Draft, Active, Inactive, Archived), IP/OP, Clock Name (Primary/Secondary), Tenant.
+
+AC-04  Default sort is Last Modified descending; any column is sortable.
+
+AC-05  Each row shows a colored status badge: green (Active), grey (Draft), amber (Inactive), red (Archived).
+
+AC-06  Pagination with page-size options (25, 50, 100) and total record count displayed.
+
+AC-07  Clicking a row opens the Rule Detail view (read-only summary).
+
+AC-08  A 'Quick Actions' column with icon buttons: Edit, Clone, Deactivate/Activate, View History.
+
+Notes / Edge Cases
+
+Archived rules are hidden from the default view — a toggle 'Show Archived' reveals them.
+
+Bulk actions: select multiple rules and perform Activate, Deactivate, or Archive in one action.
+
+
+
+Story ID
+
+US-04-02
+
+Priority
+
+Must Have
+
+Title
+
+Clone an Existing Rule
+
+As a...
+
+Configuration Analyst
+
+I want to...
+
+duplicate an existing rule as a starting point for a new similar rule
+
+So that...
+
+I save time when creating rules that differ in only a few fields
+
+Story Points
+
+3
+
+Sprint
+
+TBD
+
+Acceptance Criteria
+
+AC-01  A 'Clone' button appears on the Rule List row and on the Rule Detail page.
+
+AC-02  Clicking Clone creates an exact copy with the name prefixed: 'Copy of [Original Rule Name]' and status set to 'Draft'.
+
+AC-03  The cloned rule immediately opens in edit mode (wizard Step 1) so the analyst can make changes.
+
+AC-04  The clone is associated with the same tenant by default but the analyst can change the tenant on Step 1.
+
+AC-05  A toast notification confirms: 'Rule cloned successfully. You are now editing the copy.'
+
+Notes / Edge Cases
+
+Cloning an Active rule should prompt: 'You are cloning an active rule. The clone will be in Draft status.'
+
+
+
+Story ID
+
+US-04-03
+
+Priority
+
+Must Have
+
+Title
+
+Activate, Deactivate, and Archive a Rule
+
+As a...
+
+Operations Manager
+
+I want to...
+
+change the lifecycle status of a rule to control whether it is evaluated against incoming cases
+
+So that...
+
+only validated and approved rules affect case clock behavior in production
+
+Story Points
+
+5
+
+Sprint
+
+TBD
+
+Acceptance Criteria
+
+AC-01  Status transitions follow: Draft → Active → Inactive → Archived.
+
+AC-02  Activating a rule requires at minimum one matching criterion and one clock behavior to be configured (the system validates and blocks activation otherwise).
+
+AC-03  Activating a rule that overlaps with another active rule shows a confirmation modal listing all conflicts.
+
+AC-04  Deactivating a rule shows a modal: 'This will stop clock evaluation for new cases matching this rule. In-flight clocks are not affected.' with Confirm/Cancel.
+
+AC-05  Archiving is permanent for the UI (not deletable) but the rule is hidden from default views and inactive from evaluation.
+
+AC-06  Status changes are captured in the audit log with timestamp, user, and previous/new status.
+
+Notes / Edge Cases
+
+There is no hard delete — rules can only be archived.
+
+Draft rules that have never been activated show an 'Activate' button only after mandatory fields are validated.
+
+
+
+Story ID
+
+US-04-04
+
+Priority
+
+Should Have
+
+Title
+
+Version History and Rule Rollback
+
+As a...
+
+Operations Manager
+
+I want to...
+
+view the change history of a rule and restore a previous version
+
+So that...
+
+I can recover quickly if a misconfigured rule causes incorrect clock behavior
+
+Story Points
+
+8
+
+Sprint
+
+TBD
+
+Acceptance Criteria
+
+AC-01  Each rule has a 'Version History' tab showing a timeline: version number, date, changed by, change summary.
+
+AC-02  Clicking a version shows a side-by-side diff of all fields that changed between that version and the current one.
+
+AC-03  A 'Restore This Version' button creates a new Draft version pre-populated from the historical version (does not overwrite the current active rule directly).
+
+AC-04  Restored drafts are labelled: 'Restored from v[N] by [User] on [Date]'.
+
+AC-05  Version history is retained indefinitely and is not affected by archiving.
+
+Notes / Edge Cases
+
+Rollback creates a new version, it does not overwrite — audit integrity must be preserved.
+
+
+
+EP-05 · Rule Test Simulator
+
+
+
+Story ID
+
+US-05-01
+
+Priority
+
+Must Have
+
+Title
+
+Test a Rule Against a Sample Case
+
+As a...
+
+Configuration Analyst
+
+I want to...
+
+simulate how a rule will behave against a test case input before activating it
+
+So that...
+
+I can verify the clock logic, thresholds, and exclusions are correct without affecting live cases
+
+Story Points
+
+8
+
+Sprint
+
+TBD
+
+Acceptance Criteria
+
+AC-01  A 'Test Rule' button is available on the Rule Detail page and at Step 3 of the wizard (Review step).
+
+AC-02  The simulator panel shows input fields matching the rule's matching criteria (pre-filled from the rule).
+
+AC-03  Analyst can enter: Case ID (optional real case lookup), trigger event date/time, and override any matching criteria field.
+
+AC-04  On clicking 'Run Simulation', the panel displays: Clock Start time, Clock End time (deadline), Yellow Alert trigger time, Red Alert trigger time, and Pause/Resume events if applicable.
+
+AC-05  If holiday and weekend exclusions are active, the timeline shows skipped days highlighted in a different color.
+
+AC-06  A secondary clock simulation section appears if chaining is configured.
+
+AC-07  Results are exportable as a PDF summary.
+
+AC-08  If a real Case ID is entered, the system fetches the case's actual field values and uses those as inputs.
+
+Notes / Edge Cases
+
+Simulation runs against the saved (not live) version of the rule — unsaved changes are not simulated.
+
+The simulator must clearly label which clock is Primary vs. Secondary.
+
+Edge case: simulate a case where pause occurs on a Friday before a holiday weekend — verify correct resume calculation.
+
+
+
+Story ID
+
+US-05-02
+
+Priority
+
+Should Have
+
+Title
+
+Bulk Test Multiple Cases Against a Rule
+
+As a...
+
+Developer / QA
+
+I want to...
+
+upload a CSV of test cases and run them all through a rule to verify bulk behavior
+
+So that...
+
+I can do regression testing and validate TAT calculations at scale before go-live
+
+Story Points
+
+8
+
+Sprint
+
+TBD
+
+Acceptance Criteria
+
+AC-01  A 'Bulk Test' option is available in the simulator for users with QA or Admin role.
+
+AC-02  User uploads a CSV with columns matching: Case Type, Service Type, Request Type, Trigger Date, Trigger Time.
+
+AC-03  System processes all rows and returns a results table: Case ID / Row Number, Matched Rule (Yes/No), Clock Start, Deadline, Yellow Alert, Red Alert, any warnings.
+
+AC-04  Results are downloadable as CSV and PDF.
+
+AC-05  Processing is asynchronous for batches > 100 rows; a progress bar and email notification are shown.
+
+Notes / Edge Cases
+
+Bulk test results are not stored permanently — they expire after 24 hours unless downloaded.
+
+A downloadable CSV template with headers and example data is provided in the UI.
+
+
+
+EP-06 · Audit & Change History
+
+
+
+Story ID
+
+US-06-01
+
+Priority
+
+Must Have
+
+Title
+
+View System-Wide Audit Log
+
+As a...
+
+Compliance Officer
+
+I want to...
+
+view a chronological log of all changes made to rules, schedules, and holidays across the system
+
+So that...
+
+I can demonstrate regulatory compliance and trace the origin of any configuration
+
+Story Points
+
+5
+
+Sprint
+
+TBD
+
+Acceptance Criteria
+
+AC-01  An Audit Log page shows: timestamp, user, tenant, action type (Created, Updated, Activated, Deactivated, Archived, Cloned, Restored), entity type (Rule, Schedule, Holiday), entity name/ID, and a summary of changes.
+
+AC-02  Filters: date range picker, tenant, user, action type, entity type.
+
+AC-03  Each log entry has an 'Expand' button showing the full before/after JSON diff.
+
+AC-04  Audit logs are read-only; no user can edit or delete them.
+
+AC-05  Logs are exportable as CSV with the current filter applied.
+
+AC-06  Log retention is minimum 2 years (configurable by system admin).
+
+Notes / Edge Cases
+
+Audit logs must capture the user's display name and email, not just user ID.
+
+System-generated changes (e.g., annual holiday auto-generation) must be logged as 'System' user.
+
+
+
+EP-07 · Access Control & Permissions
+
+
+
+Story ID
+
+US-07-01
+
+Priority
+
+Must Have
+
+Title
+
+Role-Based Access to Rule Configuration
+
+As a...
+
+System Administrator
+
+I want to...
+
+assign roles to users that control what they can view, edit, and approve in the system
+
+So that...
+
+sensitive rule changes are gated by appropriate authorization
+
+Story Points
+
+5
+
+Sprint
+
+TBD
+
+Acceptance Criteria
+
+AC-01  Four roles are supported: Viewer (read-only), Editor (create/edit Draft rules), Approver (can Activate/Deactivate), Administrator (all permissions + tenant management).
+
+AC-02  Role assignments are managed on the User Management page (visible only to Admins).
+
+AC-03  Unauthorized actions show a disabled state on buttons with a tooltip: 'You do not have permission to perform this action.'
+
+AC-04  Role changes take effect on next login (session is invalidated on role change).
+
+AC-05  Audit log captures role assignment changes.
+
+AC-06  A user can belong to one role per tenant (multi-tenant: different roles per tenant are supported).
+
+Notes / Edge Cases
+
+All API endpoints enforce role-based authorization server-side — client-side hiding is UI convenience only.
+
+Viewer role can access the Test Simulator in read-only mode (can run simulations but cannot modify the rule).
+
+
+
+EP-08 · UX — Usability & Accessibility
+
+
+
+Story ID
+
+US-08-01
+
+Priority
+
+Must Have
+
+Title
+
+Inline Validation and Guided Error Recovery
+
+As a...
+
+Configuration Analyst
+
+I want to...
+
+receive clear, contextual error messages as I fill out the rule builder
+
+So that...
+
+I can fix mistakes immediately without having to re-read technical documentation
+
+Story Points
+
+5
+
+Sprint
+
+TBD
+
+Acceptance Criteria
+
+AC-01  All required fields are marked with a red asterisk and 'Required' helper text.
+
+AC-02  Validation fires on field blur (not on every keystroke) to avoid distracting the user.
+
+AC-03  Error messages appear directly below the offending field in red text with an icon.
+
+AC-04  Errors are also summarized at the top of the step in an error summary box when the user tries to proceed.
+
+AC-05  Success states are shown with a green checkmark on validated fields.
+
+AC-06  Complex fields (e.g., Pause Conditions) have a '?' icon that opens a tooltip with an example.
+
+
+
+Story ID
+
+US-08-02
+
+Priority
+
+Must Have
+
+Title
+
+Wizard Progress and Navigation
+
+As a...
+
+Configuration Analyst
+
+I want to...
+
+navigate between wizard steps freely, see my overall progress, and return to any step to make corrections
+
+So that...
+
+building a rule feels fast and non-destructive, and I never lose my work mid-configuration
+
+Story Points
+
+5
+
+Sprint
+
+TBD
+
+Acceptance Criteria
+
+AC-01  A horizontal step indicator at the top shows: Step 1: Criteria → Step 2: Clock Behavior → Step 3: Exclusions & Thresholds → Step 4: Review & Save.
+
+AC-02  Completed steps show a green checkmark; the current step is highlighted; future steps are greyed out.
+
+AC-03  Users can click on any completed step to jump back to it without losing data entered in later steps.
+
+AC-04  Auto-save to browser session storage occurs on every field change — if the user navigates away and returns, the wizard resumes from where they left off.
+
+AC-05  A 'Save as Draft' button is available on every step.
+
+AC-06  Clicking the browser Back button prompts: 'You have unsaved changes. Leave anyway?' — staying keeps the session.
+
+Notes / Edge Cases
+
+Auto-save to session storage must not persist sensitive data beyond the browser session.
+
+The wizard must be fully usable via keyboard-only navigation (Tab, Enter, Arrow keys).
+
+
+
+Story ID
+
+US-08-03
+
+Priority
+
+Should Have
+
+Title
+
+Rule Summary Preview (Plain English)
+
+As a...
+
+Operations Manager
+
+I want to...
+
+see a plain-English summary of any rule on the Rule Detail page and during wizard review
+
+So that...
+
+I can quickly verify a rule's intent without needing to interpret technical field values
+
+Story Points
+
+5
+
+Sprint
+
+TBD
+
+Acceptance Criteria
+
+AC-01  A 'Rule Summary' card is shown at the top of the Rule Detail page.
+
+AC-02  The summary reads as a human sentence, e.g.: 'When a case is Inpatient Admission (IP) with Request Type = Prior Auth, start the Primary Clock for 7 Calendar Days (Next Day). Alert at 2 Days (Yellow) and 1 Day (Red). Clock pauses when Line Status = Pending + Task Name = Request Additional Info. A Secondary Clock of 10 Days is started simultaneously. Holidays and Weekends are not excluded.'
+
+AC-03  The summary updates in real time as fields are changed in the wizard.
+
+AC-04  The summary is included in the PDF export of a rule.
+
+Notes / Edge Cases
+
+Plain-English generator must handle all supported combinations without producing grammatically broken sentences.
+
+Secondary clock chaining must be reflected in the summary with a connecting phrase such as 'simultaneously triggers a Secondary Clock.'
+
+
+
+4. Non-Functional Requirements
+
+Category
+
+Requirement
+
+Performance
+
+Rule list page loads in < 2 seconds for up to 1,000 rules. Simulator returns results in < 3 seconds for single case; < 30 seconds for bulk 100 rows.
+
+Availability
+
+99.5% uptime SLA. Planned maintenance windows must be communicated 48 hours in advance via in-app banner.
+
+Security
+
+All API calls require authentication (OAuth 2.0 / OIDC). Tenant data is fully isolated (row-level security). All PII is masked in audit logs. HTTPS enforced.
+
+Accessibility
+
+WCAG 2.1 Level AA compliance. All interactive elements keyboard-accessible. Color is not the only indicator of state — icons and text labels accompany color cues.
+
+Browser Support
+
+Chrome (latest 2 versions), Edge (latest 2 versions), Firefox (latest 2 versions), Safari 16+. Mobile browsers: responsive layout supported but optimized for desktop.
+
+Scalability
+
+Supports up to 50 tenants, 500 rules per tenant, 10,000 holidays per tenant without performance degradation.
+
+Localization
+
+Date and time formats must respect tenant time zone. Currency-neutral (no currency fields). UI text externalized for future i18n.
+
+
+
+5. Story Summary & Prioritization
+
+Story ID
+
+Title
+
+Epic
+
+Priority
+
+Points
+
+US-01-01
+
+Register a New Tenant
+
+EP-01
+
+Must Have
+
+5
+
+US-01-02
+
+Configure Tenant Work Schedule
+
+EP-01
+
+Must Have
+
+5
+
+US-01-03
+
+Manage Tenant Holiday Calendar
+
+EP-01
+
+Must Have
+
+5
+
+US-02-01
+
+Create Rule – Step 1: Matching Criteria
+
+EP-02
+
+Must Have
+
+8
+
+US-02-02
+
+Edit Matching Criteria on Existing Rule
+
+EP-02
+
+Must Have
+
+5
+
+US-03-01
+
+Configure Primary Clock Behavior
+
+EP-03
+
+Must Have
+
+8
+
+US-03-02
+
+Configure Clock Pause and Resume
+
+EP-03
+
+Must Have
+
+8
+
+US-03-03
+
+Configure Threshold Alerts
+
+EP-03
+
+Must Have
+
+5
+
+US-03-04
+
+Configure Holiday & Weekend Exclusions
+
+EP-03
+
+Must Have
+
+5
+
+US-03-05
+
+Configure Clock Chaining
+
+EP-03
+
+Must Have
+
+13
+
+US-04-01
+
+View and Search All Clock Rules
+
+EP-04
+
+Must Have
+
+5
+
+US-04-02
+
+Clone an Existing Rule
+
+EP-04
+
+Must Have
+
+3
+
+US-04-03
+
+Activate / Deactivate / Archive a Rule
+
+EP-04
+
+Must Have
+
+5
+
+US-04-04
+
+Version History and Rollback
+
+EP-04
+
+Should Have
+
+8
+
+US-05-01
+
+Test Rule Against a Sample Case
+
+EP-05
+
+Must Have
+
+8
+
+US-05-02
+
+Bulk Test Multiple Cases
+
+EP-05
+
+Should Have
+
+8
+
+US-06-01
+
+View System-Wide Audit Log
+
+EP-06
+
+Must Have
+
+5
+
+US-07-01
+
+Role-Based Access Control
+
+EP-07
+
+Must Have
+
+5
+
+US-08-01
+
+Inline Validation & Error Recovery
+
+EP-08
+
+Must Have
+
+5
+
+US-08-02
+
+Wizard Progress & Navigation
+
+EP-08
+
+Must Have
+
+5
+
+US-08-03
+
+Plain English Rule Summary
+
+EP-08
+
+Should Have
+
+5
+
+
+
+Total Story Points: 148  |  Must Have: 109 pts  |  Should Have: 39 pts
+
+
+
+6. Glossary
+
+Term
+
+Definition
+
+TAT
+
+Turnaround Time — the maximum allowed duration for a case or request to be processed.
+
+Primary Clock
+
+The main compliance clock that runs for a case. A case may have one primary clock.
+
+Secondary Clock
+
+An additional clock that runs concurrently with or after the primary clock, typically triggered by a pause/pend event.
+
+Clock Chaining
+
+The automatic triggering of one clock event by another (e.g., pausing the primary clock starts the secondary clock).
+
+Calendar Days
+
+Counting method that includes all 7 days of the week regardless of holidays or weekends.
+
+Flat Hours
+
+Counting method using absolute hours (24-hour days), not restricted to business hours.
+
+Business Hours
+
+Counting method that only counts hours within the tenant's configured work schedule.
+
+Same Day
+
+The clock starts on the same day as the trigger event.
+
+Next Day
+
+The clock starts on the business/calendar day following the trigger event.
+
+Yellow Alert
+
+A threshold warning indicating a case is approaching its TAT deadline (configurable interval before deadline).
+
+Red Alert
+
+A threshold indicating a case is critically close to or has exceeded its TAT deadline.
+
+IP
+
+Inpatient — case type indicating the patient is admitted to a facility.
+
+OP
+
+Outpatient — case type indicating the patient is treated without admission.
+
+Pause Condition
+
+A set of field=value conditions that, when all true simultaneously, pause the running clock.
+
+Resume Condition
+
+A set of field=value conditions that, when all true simultaneously, resume a paused clock.
+
+Tenant
+
+An isolated client organization within the multi-tenant application, with its own rules, schedules, and holidays.
+
+Draft
+
+Rule lifecycle status: created but not yet activated. Does not affect live cases.
+
+Active
+
+Rule lifecycle status: the rule is evaluated against incoming cases.
+
+Archived
+
+Rule lifecycle status: permanently inactive and hidden from default views. Cannot be re-activated.
+

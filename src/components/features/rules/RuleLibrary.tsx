@@ -91,18 +91,85 @@ export default function RuleLibrary() {
                 </button>
             </div>
 
-            {/* Stat Chips */}
-            <div className="stat-chips" style={{ marginBottom: 'var(--space-6)' }}>
-                {statusFilters.map((f) => (
-                    <button
-                        key={f.value}
-                        className={`stat-chip ${statusFilter === f.value ? 'active' : ''}`}
-                        onClick={() => setStatusFilter(f.value)}
-                    >
-                        <span className="stat-chip-count">{statusCounts[f.value] || 0}</span>
-                        {f.label}
-                    </button>
-                ))}
+            {/* Stat Chips (Redesigned) */}
+            <div 
+                style={{ 
+                    display: 'flex', 
+                    gap: '12px', 
+                    marginBottom: 'var(--space-8)', 
+                    overflowX: 'auto', 
+                    padding: '6px 4px 12px 4px',
+                    scrollbarWidth: 'none',
+                    WebkitOverflowScrolling: 'touch'
+                }}
+            >
+                {statusFilters.map((f) => {
+                    const isActive = statusFilter === f.value;
+                    const count = statusCounts[f.value] || 0;
+                    
+                    // Build semantic coloring for active states
+                    let colorVar = 'var(--color-text-secondary)';
+                    let bgVar = 'var(--color-bg-secondary)';
+                    let glowColor = 'transparent';
+
+                    if (isActive) {
+                        if (f.value === 'active') { colorVar = 'var(--color-success-dark)'; bgVar = 'var(--color-success-light)'; glowColor = 'rgba(16, 185, 129, 0.25)'; }
+                        else if (f.value === 'draft') { colorVar = 'var(--color-text-primary)'; bgVar = 'var(--color-border)'; glowColor = 'rgba(148, 163, 184, 0.25)'; }
+                        else if (f.value === 'inactive') { colorVar = 'var(--color-warning-dark)'; bgVar = 'var(--color-warning-light)'; glowColor = 'rgba(245, 158, 11, 0.25)'; }
+                        else if (f.value === 'archived') { colorVar = 'var(--color-text-tertiary)'; bgVar = 'var(--color-bg-secondary)'; glowColor = 'transparent'; }
+                        else { colorVar = 'var(--color-primary-dark)'; bgVar = 'var(--color-primary-100)'; glowColor = 'rgba(34, 197, 94, 0.25)'; }
+                    }
+
+                    return (
+                        <button
+                            key={f.value}
+                            onClick={() => setStatusFilter(f.value)}
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '10px',
+                                padding: '8px 16px 8px 8px',
+                                borderRadius: 'var(--radius-full)',
+                                border: isActive ? '1px solid currentColor' : '1px solid var(--color-border)',
+                                backgroundColor: isActive ? bgVar : 'var(--color-surface)',
+                                color: isActive ? colorVar : 'var(--color-text-secondary)',
+                                fontSize: 'var(--font-size-sm)',
+                                fontWeight: isActive ? 600 : 500,
+                                cursor: 'pointer',
+                                transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                                boxShadow: isActive ? `0 4px 12px ${glowColor}` : '0 1px 2px rgba(0,0,0,0.05)',
+                                transform: isActive ? 'translateY(-2px)' : 'translateY(0)',
+                                opacity: count === 0 && !isActive ? 0.6 : 1,
+                            }}
+                            onMouseOver={(e) => {
+                                if (!isActive) e.currentTarget.style.borderColor = 'var(--color-text-tertiary)';
+                            }}
+                            onMouseOut={(e) => {
+                                if (!isActive) e.currentTarget.style.borderColor = 'var(--color-border)';
+                            }}
+                        >
+                            <span 
+                                style={{ 
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    minWidth: '26px',
+                                    height: '26px',
+                                    borderRadius: '50%',
+                                    backgroundColor: isActive ? 'var(--color-surface)' : 'var(--color-bg-secondary)',
+                                    color: isActive ? colorVar : 'var(--color-text-primary)',
+                                    fontWeight: 700,
+                                    fontSize: '12px',
+                                    transition: 'all 0.3s ease',
+                                    boxShadow: isActive ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
+                                }}
+                            >
+                                {count}
+                            </span>
+                            {f.label}
+                        </button>
+                    );
+                })}
             </div>
 
             {/* Filter Bar */}

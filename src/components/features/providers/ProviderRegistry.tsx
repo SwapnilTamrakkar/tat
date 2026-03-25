@@ -10,7 +10,7 @@ export default function ProviderRegistry() {
     const { deactivateRulesForProvider } = useRuleStore();
     const [searchQuery, setSearchQuery] = useState('');
     const [showAddModal, setShowAddModal] = useState(false);
-    const [newProvider, setNewProvider] = useState({ name: '', code: '', timezone: 'America/New_York' });
+    const [newProvider, setNewProvider] = useState({ name: '', code: '', timezone: 'America/New_York', effectiveStartDate: new Date().toISOString().split('T')[0] });
 
     const filteredProviders = providers.filter(t => 
         t.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -48,12 +48,13 @@ export default function ProviderRegistry() {
         addProvider({ 
             name: newProvider.name, 
             code: newProvider.code.toUpperCase(), 
-            timezone: newProvider.timezone 
+            timezone: newProvider.timezone,
+            effectiveStartDate: newProvider.effectiveStartDate
         });
         
         addToast(`Provider ${newProvider.name} registered.`, 'success');
         setShowAddModal(false);
-        setNewProvider({ name: '', code: '', timezone: 'America/New_York' });
+        setNewProvider({ name: '', code: '', timezone: 'America/New_York', effectiveStartDate: new Date().toISOString().split('T')[0] });
     };
 
     return (
@@ -175,6 +176,16 @@ export default function ProviderRegistry() {
                                     <option value="America/Denver">Mountain Time (MT)</option>
                                     <option value="America/Los_Angeles">Pacific Time (PT)</option>
                                 </Select>
+                            </div>
+                            <div className="form-group">
+                                <label className="form-label">Effective Start Date <span className="form-label-required">*</span></label>
+                                <input
+                                    type="date"
+                                    className="form-input"
+                                    value={newProvider.effectiveStartDate}
+                                    onChange={(e) => setNewProvider({ ...newProvider, effectiveStartDate: e.target.value })}
+                                    required
+                                />
                             </div>
                         </div>
                         <div className="modal-footer">
